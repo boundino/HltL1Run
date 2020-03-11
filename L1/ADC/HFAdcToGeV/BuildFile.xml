@@ -20,6 +20,4 @@
 <use   name="CalibFormats/HcalObjects">
 <use   name="L1Trigger/L1TCalorimeter"/>
 <use   name="CondTools/L1Trigger"/>
-<library   file="*.cc" name="L1TriggerL1TCalorimeterPlugins">
-  <flags   EDM_PLUGIN="1"/>
-</library>
+<flags   EDM_PLUGIN="1"/>
