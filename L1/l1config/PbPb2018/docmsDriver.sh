@@ -2,14 +2,12 @@
 
 globaltag=103X_dataRun2_Prompt_v3
 era=Run2_2018
-filein='file:/afs/cern.ch/work/w/wangj/public/HIZeroBiasReducedFormat/HIRun2018A-v1/FABCF51E-4182-C341-B159-BF5C73482FAA.root' ; rawlabel="rawDataReducedFormat" ;
-# filein='file:/afs/cern.ch/work/w/wangj/public/HIEmptyBX/HIRun2018A-v1/596BE573-BF9D-6548-A994-46113B0151EB.root' ; rawlabel="rawDataRepacker" ;
-# filein='file:/afs/cern.ch/work/w/wangj/public/HIMinimumBias2/HIRun2018A-v1/FC3873C2-BDA3-D747-908D-7C29DC301129.root' ; rawlabel="rawDataRepacker" ;
-
-config=l1Ntuple_data2018
+# filein='file:/afs/cern.ch/work/w/wangj/public/HIZeroBiasReducedFormat/HIRun2018A-v1/FABCF51E-4182-C341-B159-BF5C73482FAA.root' ; rawlabel="rawDataReducedFormat" ; config=l1Ntuple_data2018RF ;
+# filein='file:/afs/cern.ch/work/w/wangj/public/HIEmptyBX/HIRun2018A-v1/596BE573-BF9D-6548-A994-46113B0151EB.root' ; rawlabel="rawDataRepacker" ; config=l1Ntuple_data2018 ;
+filein='file:/afs/cern.ch/work/w/wangj/public/HIMinimumBias2/HIRun2018A-v1/FC3873C2-BDA3-D747-908D-7C29DC301129.root' ; rawlabel="rawDataRepacker" ; config=l1Ntuple_data2018 ;
 
 cmsDriver.py l1Ntuple -s RAW2DIGI --no_exec \
-    --python_filename=${config}.py -n 10 --no_output --era=${era} --data --conditions=${globaltag} \
+    --python_filename=${config}.py -n -1 --no_output --era=${era} --data --conditions=${globaltag} \
     --customise=L1Trigger/Configuration/customiseReEmul.L1TReEmulFromRAW \
     --customise=L1Trigger/L1TNtuples/customiseL1Ntuple.L1NtupleRAWEMU \
     --customise=L1Trigger/Configuration/customiseSettings.L1TSettingsToCaloParams_2018_v1_4 \
@@ -40,7 +38,7 @@ echo '
 import FWCore.ParameterSet.VarParsing as VarParsing
 ivars = VarParsing.VarParsing('"'"'analysis'"'"')
 
-ivars.maxEvents = 10
+ivars.maxEvents = -1
 ivars.outputFile='"'"'L1Ntuple.root'"'"'
 ivars.inputFiles='"'"${filein}"'"'
 ivars.parseArguments()# get and parse the command line arguments
