@@ -66,7 +66,8 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
       skimtree->GetEntry(i);
 
       if(runno >= 0 && run != runno) continue;
-      if(run != 326676 && run != 326718) continue;
+      // if(run != 326676 && run != 326718) continue;
+
       count++;
 
       bool collisionEventSelection = pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter;
@@ -85,7 +86,7 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
               if(amplmax_plus > j && amplmax_minus > j) { hEffAndEvtfilnom->Fill(j, 1); }
 
               hEffAndEvtfildencent[k]->Fill(j, 1); 
-              if(amplmax_plus > j && amplmax_plus > j) { hEffAndEvtfilnomcent[k]->Fill(j, 1); } 
+              if(amplmax_plus > j && amplmax_minus > j) { hEffAndEvtfilnomcent[k]->Fill(j, 1); } 
 
               if(is8595)
                 {
@@ -103,7 +104,7 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
               if(fibermax_plus > j && fibermax_minus > j) { hfibEffAndEvtfilnom->Fill(j, 1); }
 
               hfibEffAndEvtfildencent[k]->Fill(j, 1); 
-              if(fibermax_plus > j && fibermax_plus > j) { hfibEffAndEvtfilnomcent[k]->Fill(j, 1); } 
+              if(fibermax_plus > j && fibermax_minus > j) { hfibEffAndEvtfilnomcent[k]->Fill(j, 1); } 
 
               if(is8595)
                 {
@@ -163,7 +164,7 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
       l1EvtTree->GetEntry(i);
 
       if(runno >= 0 && Event->run != runno) continue;
-      if(Event->run != 326676 && Event->run != 326718) continue;
+      // if(Event->run != 326676 && Event->run != 326718) continue;
 
       count++;
 
@@ -181,8 +182,8 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
     }
   xjjc::progressbar_summary(nentries);
   std::cout<<"-- L1 (\e[4;1m"<<runno<<"\e[0m): \e[33m"<<count<<"\e[0m, \e[33;1m"<<Form("%.1f", count*1.0/nentries*100.)<<"%\e[0m"<<std::endl;
-  hEffRate->Scale(1./nentries);
-  hfibEffRate->Scale(1./nentries);
+  hEffRate->Scale(1./count);
+  hfibEffRate->Scale(1./count);
 
   // output
 

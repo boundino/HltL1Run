@@ -1,18 +1,22 @@
 #!/bin/bash
 
-INDEX=(0)
-
-INPUTFILE=(
-    "/export/d00/scratch/jwang/L1PbPb2021/shuai/shuai_L1NtupleRAWEMUCalo_HFAdc_smallStat_326776.root,/export/d00/scratch/jwang/L1PbPb2021/shuai/shuai_L1NtupleRAWEMUCalo_HFAdc_smallStat_326776.root,2018 PbPb ZeroBias (326776),326776"
+RUNS=(
+    326776
+    326822
+    326859
+    326942
+    327078
+    327148
+    # -1
 )
 
 [[ ${1:-0} -eq 1 || $# == 0 ]] && { g++ adceff_savehist_shuai.cc $(root-config --libs --cflags) -I"$HOME" -g -o adceff_savehist.exe || exit 1 ; }
 [[ ${2:-0} -eq 1 || $# == 0 ]] && { g++ adceff_drawhist.cc $(root-config --libs --cflags) -I"$HOME" -g -o adceff_drawhist.exe || exit 1 ; }
 
-for i in ${INDEX[@]}
+for i in ${RUNS[@]}
 do
-    argv=
-    IFS=',' ; argv=(${INPUTFILE[i]}) ; unset IFS
+    INPUTFILE="/export/d00/scratch/jwang/L1PbPb2021/shuai/skim_shuai_L1NtupleRAWEMUCalo_HFAdc_smallStat.root,/export/d00/scratch/jwang/L1PbPb2021/shuai/skim_shuai_L1NtupleRAWEMUCalo_HFAdc_smallStat.root,2018 PbPb ZeroBias (${i}),$i"
+    IFS=',' ; argv=($INPUTFILE) ; unset IFS ;
     inputfile="${argv[0]} ${argv[1]}"
     tag="${argv[2]}"
     runno=${argv[3]}

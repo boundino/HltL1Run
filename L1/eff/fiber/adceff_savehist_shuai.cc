@@ -52,7 +52,7 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
   int nentries = root->GetEntries();
   for(int i=0;i<nentries;i++)
     {
-      xjjc::progressbar(i, nentries, 10000);
+      xjjc::progressbar(i, nentries, 100000);
 
       root->GetEntry(i);
 
@@ -79,7 +79,7 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
               if(amplmax_plus > j && amplmax_minus > j) { hEffAndEvtfilnom->Fill(j, 1); }
 
               hEffAndEvtfildencent[k]->Fill(j, 1); 
-              if(amplmax_plus > j && amplmax_plus > j) { hEffAndEvtfilnomcent[k]->Fill(j, 1); } 
+              if(amplmax_plus > j && amplmax_minus > j) { hEffAndEvtfilnomcent[k]->Fill(j, 1); } 
 
               if(is8595)
                 {
@@ -145,8 +145,8 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
     }
   xjjc::progressbar_summary(nentries);
   std::cout<<"-- L1 (\e[4;1m"<<runno<<"\e[0m): \e[33m"<<count<<"\e[0m, \e[33;1m"<<Form("%.1f", count*1.0/nentries*100.)<<"%\e[0m"<<std::endl;
-  hEffRate->Scale(1./nentries);
-  hfibEffRate->Scale(1./nentries);
+  hEffRate->Scale(1./count);
+  hfibEffRate->Scale(1./count);
 
   // output
 
