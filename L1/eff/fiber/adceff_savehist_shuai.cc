@@ -37,41 +37,35 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
     }
 
   TFile* inf = TFile::Open(inputname_eff.c_str());
-  TTree* l1Adc = (TTree*)inf->Get("HFAdcana/adc");
-  TTree* hiroot = (TTree*)inf->Get("hiEvtAnalyzer/HiTree");
-  TTree* skimtree = (TTree*)inf->Get("skimanalysis/HltTree");
+  TTree* root = (TTree*)inf->Get("EvtTowerInfoNTuple");
 
-  int hiBin; hiroot->SetBranchAddress("hiBin", &hiBin);
-  UInt_t run; hiroot->SetBranchAddress("run", &run);
-  int pprimaryVertexFilter; skimtree->SetBranchAddress("pprimaryVertexFilter", &pprimaryVertexFilter);
-  int phfCoincFilter2Th4; skimtree->SetBranchAddress("phfCoincFilter2Th4", &phfCoincFilter2Th4);
-  int pclusterCompatibilityFilter; skimtree->SetBranchAddress("pclusterCompatibilityFilter", &pclusterCompatibilityFilter);
-  int amplmax_plus; l1Adc->SetBranchAddress("amplmax_plus", &amplmax_plus);
-  int amplmax_minus; l1Adc->SetBranchAddress("amplmax_minus", &amplmax_minus);
-  int longmax_plus; l1Adc->SetBranchAddress("longmax_plus", &longmax_plus);
-  int longmax_minus; l1Adc->SetBranchAddress("longmax_minus", &longmax_minus);
-  int shortmax_plus; l1Adc->SetBranchAddress("shortmax_plus", &shortmax_plus);
-  int shortmax_minus; l1Adc->SetBranchAddress("shortmax_minus", &shortmax_minus);
+  short hiBin; root->SetBranchAddress("mCenBin", &hiBin);
+  UInt_t run; root->SetBranchAddress("mRunNb", &run);
+  bool mEvtSel[18]; root->SetBranchAddress("mEvtSel", mEvtSel);
+  bool mTrigHLT[12]; root->SetBranchAddress("mTrigHLT", mTrigHLT);
+  int amplmax_plus; root->SetBranchAddress("mMaxL1HFAdcPlus", &amplmax_plus);
+  int amplmax_minus; root->SetBranchAddress("mMaxL1HFAdcMinus", &amplmax_minus);
 
   int count = 0;
 
   //
-  int nentries = l1Adc->GetEntries();
+  int nentries = root->GetEntries();
   for(int i=0;i<nentries;i++)
     {
       xjjc::progressbar(i, nentries, 10000);
 
-      l1Adc->GetEntry(i);
-      hiroot->GetEntry(i);
-      skimtree->GetEntry(i);
+      root->GetEntry(i);
 
       if(runno >= 0 && run != runno) continue;
-      if(run != 326676 && run != 326718) continue;
+      if(!mTrigHLT[9]) continue;
+
       count++;
 
+      bool pprimaryVertexFilter = mEvtSel[2];
+      bool phfCoincFilter2Th4 = mEvtSel[1];
+      bool pclusterCompatibilityFilter = mEvtSel[3];
+
       bool collisionEventSelection = pprimaryVertexFilter && phfCoincFilter2Th4 && pclusterCompatibilityFilter;
-      int fibermax_plus = std::max(longmax_plus, shortmax_plus);
-      int fibermax_minus = std::max(longmax_minus, shortmax_minus);
 
       int k = 0;
       for(k=0; k<adceff::nhiBins; k++) { if(hiBin < adceff::hiBins[k+1]) { break; } }
@@ -91,24 +85,6 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
                 {
                   hEffAndEvtfil8595den->Fill(j, 1);
                   if(amplmax_plus > j && amplmax_minus > j) { hEffAndEvtfil8595nom->Fill(j, 1); }
-                }
-            }
-        }
-
-      for(int j=0; j<adceff::nbinfib; j++)
-        {
-          if(collisionEventSelection)
-            {
-              hfibEffAndEvtfilden->Fill(j, 1);
-              if(fibermax_plus > j && fibermax_minus > j) { hfibEffAndEvtfilnom->Fill(j, 1); }
-
-              hfibEffAndEvtfildencent[k]->Fill(j, 1); 
-              if(fibermax_plus > j && fibermax_plus > j) { hfibEffAndEvtfilnomcent[k]->Fill(j, 1); } 
-
-              if(is8595)
-                {
-                  hfibEffAndEvtfil8595den->Fill(j, 1);
-                  if(fibermax_plus > j && fibermax_minus > j) { hfibEffAndEvtfil8595nom->Fill(j, 1); }
                 }
             }
         }
@@ -140,43 +116,31 @@ void adceff_savehist(std::string inputname_eff, std::string inputname_rate, std:
   TH1F* hfibEffRate = new TH1F("hfibEffRate", ";HF threshold (ADC);Rate", adceff::nbinfib, 0, adceff::nbinfib); hfibEffRate->Sumw2();
 
   inf = TFile::Open(inputname_rate.c_str());
-  l1Adc = (TTree*)inf->Get("HFAdcana/adc");
-  TTree* l1EvtTree = (TTree*)inf->Get("l1EventTree/L1EventTree");
-  L1Analysis::L1AnalysisEventDataFormat *Event = new L1Analysis::L1AnalysisEventDataFormat();
-  l1EvtTree->SetBranchAddress("Event", &Event); 
-
-  l1Adc->SetBranchAddress("amplmax_plus", &amplmax_plus);
-  l1Adc->SetBranchAddress("amplmax_minus", &amplmax_minus);
-  l1Adc->SetBranchAddress("longmax_plus", &longmax_plus);
-  l1Adc->SetBranchAddress("longmax_minus", &longmax_minus);
-  l1Adc->SetBranchAddress("shortmax_plus", &shortmax_plus);
-  l1Adc->SetBranchAddress("shortmax_minus", &shortmax_minus);
+  root = (TTree*)inf->Get("EvtTowerInfoNTuple");
+  root->SetBranchAddress("mCenBin", &hiBin);
+  root->SetBranchAddress("mRunNb", &run);
+  root->SetBranchAddress("mEvtSel", mEvtSel);
+  root->SetBranchAddress("mTrigHLT", mTrigHLT);
+  root->SetBranchAddress("mMaxL1HFAdcPlus", &amplmax_plus);
+  root->SetBranchAddress("mMaxL1HFAdcMinus", &amplmax_minus);
 
   //
-  nentries = l1Adc->GetEntries();
+  nentries = root->GetEntries();
   count = 0;
   for(int i=0;i<nentries;i++)
     {
       xjjc::progressbar(i, nentries, 100000);
 
-      l1Adc->GetEntry(i);
-      l1EvtTree->GetEntry(i);
+      root->GetEntry(i);
 
-      if(runno >= 0 && Event->run != runno) continue;
-      if(Event->run != 326676 && Event->run != 326718) continue;
+      if(runno >= 0 && run != runno) continue;
+      if(!mTrigHLT[9]) continue;
 
       count++;
-
-      int fibermax_plus = std::max(longmax_plus, shortmax_plus);
-      int fibermax_minus = std::max(longmax_minus, shortmax_minus);
 
       for(int j=0; j<adceff::nbin; j++)
         {
           if(amplmax_plus > j && amplmax_minus > j) hEffRate->Fill(j, 1);
-        }
-      for(int j=0; j<adceff::nbinfib; j++)
-        {
-          if(fibermax_plus > j && fibermax_minus > j) hfibEffRate->Fill(j, 1);
         }
     }
   xjjc::progressbar_summary(nentries);
