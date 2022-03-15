@@ -17,7 +17,7 @@
 <use   name="DataFormats/METReco"/>
 <use   name="CondFormats/L1TObjects"/>
 <use   name="CondFormats/DataRecord"/>
-<use   name="CalibFormats/HcalObjects">
+<use   name="CalibFormats/HcalObjects"/>
 <use   name="L1Trigger/L1TCalorimeter"/>
 <use   name="CondTools/L1Trigger"/>
 <flags   EDM_PLUGIN="1"/>

@@ -46,6 +46,7 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
   edm::EDGetTokenT<QIE10DigiCollection> tok_hfQIE10_;
+  bool minimized_;
 
   int nampl_;
   std::vector<int> ieta_;
@@ -59,6 +60,8 @@ public:
   std::vector<double> energy_ped_;
 
   std::vector<int> ampl_;
+  int mMaxL1HFAdcPlus_;
+  int mMaxL1HFAdcMinus_;
 
 private:
   // L1GtUtils m_l1GtUtils;
@@ -104,6 +107,7 @@ HFAdcToGeV::HFAdcToGeV(const edm::ParameterSet& iConfig)
 {
   const edm::InputTag hcalDigis("hcalDigis");
   tok_hfQIE10_ = consumes<QIE10DigiCollection>(iConfig.getUntrackedParameter<edm::InputTag>("digiLabel", hcalDigis));
+  minimized_ = iConfig.getUntrackedParameter<bool>("minimized", false);
   // tok_hfQIE10_ = consumes<QIE10DigiCollection>(inputLabel_);
   /* inputLabel_(conf.getParameter<edm::InputTag>("digiLabel")) */
 }
@@ -150,6 +154,8 @@ void HFAdcToGeV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   nampl_ = inputSize;
   if ( inputSize )
     {
+      mMaxL1HFAdcPlus_ = -1;
+      mMaxL1HFAdcMinus_ = -1;
       for ( auto& it : *digi ) // QIE10DigiCollection::const_iterator
         {
           const QIE10DataFrame& frame(it);
@@ -198,17 +204,25 @@ void HFAdcToGeV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
               ampl += adc;
             }
 
-          ieta_.push_back(ieta);
-          iphi_.push_back(iphi);
-          depth_.push_back(depth);
-          subdet_.push_back(sub);
+          if(ieta > 0)
+            mMaxL1HFAdcPlus_ = std::max(ampl, mMaxL1HFAdcPlus_);
+          else
+            mMaxL1HFAdcMinus_ = std::max(ampl, mMaxL1HFAdcMinus_);
 
-          charge_.push_back(charge);
-          charge_ped_.push_back(charge_ped);
-          energy_.push_back(energy);
-          energy_ped_.push_back(energy_ped);
+          if(!minimized_)
+            {
+              ieta_.push_back(ieta);
+              iphi_.push_back(iphi);
+              depth_.push_back(depth);
+              subdet_.push_back(sub);
 
-          ampl_.push_back(ampl);
+              charge_.push_back(charge);
+              charge_ped_.push_back(charge_ped);
+              energy_.push_back(energy);
+              energy_ped_.push_back(energy_ped);
+
+              ampl_.push_back(ampl);
+            }
         }
     }
   root->Fill();
@@ -220,17 +234,24 @@ void
 HFAdcToGeV::beginJob()
 {
   root = fs->make<TTree>("adc","adc");
-  root->Branch("nampl", &nampl_, "nampl/I");
-  root->Branch("ieta", &ieta_);
-  root->Branch("iphi", &iphi_);
-  root->Branch("depth", &depth_);
 
-  root->Branch("charge", &charge_);
-  root->Branch("charge_ped", &charge_ped_);
-  root->Branch("energy", &energy_);
-  root->Branch("energy_ped", &energy_ped_);
+  root->Branch("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus_, "mMaxL1HFAdcPlus/I");
+  root->Branch("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus_, "mMaxL1HFAdcMinus/I");
 
-  root->Branch("ampl", &ampl_);
+  if(!minimized_)
+    {
+      root->Branch("nampl", &nampl_, "nampl/I");
+      root->Branch("ieta", &ieta_);
+      root->Branch("iphi", &iphi_);
+      root->Branch("depth", &depth_);
+
+      root->Branch("charge", &charge_);
+      root->Branch("charge_ped", &charge_ped_);
+      root->Branch("energy", &energy_);
+      root->Branch("energy_ped", &energy_ped_);
+
+      root->Branch("ampl", &ampl_);
+    }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
