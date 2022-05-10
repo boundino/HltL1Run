@@ -6,7 +6,7 @@
 #include <fstream>
 #include <TString.h>
 #include "L1AnalysisEventDataFormat.h"
-#include "L1AnalysisL1CaloTowerDataFormat.h"
+// #include "L1AnalysisL1CaloTowerDataFormat.h"
 
 int evtmatching(TString infforest, TString infl1, TString outfile, Long64_t nentries = -1)
 {
@@ -15,25 +15,31 @@ int evtmatching(TString infforest, TString infl1, TString outfile, Long64_t nent
 
   TTree* hiroot = (TTree*)fforest->Get("hiEvtAnalyzer/HiTree");
   TTree* skimroot = (TTree*)fforest->Get("skimanalysis/HltTree");
+  // TTree* zdcdigiroot = (TTree*)fforest->Get("zdcanalyzer/zdcdigi");
+  // TTree* zdcrechitroot = (TTree*)fforest->Get("zdcanalyzer/zdcrechit");
   TTree* l1EvtTree = (TTree*)fl1->Get("l1EventTree/L1EventTree");
-  TTree* l1TowerTree = (TTree*)fl1->Get("l1CaloTowerEmuTree/L1CaloTowerTree");
+  // TTree* l1TowerTree = (TTree*)fl1->Get("l1CaloTowerEmuTree/L1CaloTowerTree");
   TTree* l1ADC = (TTree*)fl1->Get("HFAdcana/adc");
 
   TFile* outf = new TFile(outfile,"recreate");
   TDirectory* dhiroot = outf->mkdir("hiEvtAnalyzer","");
   TDirectory* dskimroot = outf->mkdir("skimanalysis","");
+  // TDirectory* dzdcroot = outf->mkdir("zdcanalyzer","");
   TDirectory* dl1EvtTree = outf->mkdir("l1EventTree","");
-  TDirectory* dl1TowerTree = outf->mkdir("l1CaloTowerEmuTree","");
+  // TDirectory* dl1TowerTree = outf->mkdir("l1CaloTowerEmuTree","");
   TDirectory* dl1ADC = outf->mkdir("HFAdcana","");
 
   dhiroot->cd();
   TTree* new_hiroot = hiroot->CloneTree(0);
   dskimroot->cd();
   TTree* new_skimroot = skimroot->CloneTree(0);
+  // dzdcroot->cd();
+  // TTree* new_zdcdigiroot = zdcdigiroot->CloneTree(0);
+  // TTree* new_zdcrechitroot = zdcrechitroot->CloneTree(0);
   dl1EvtTree->cd();
   TTree* new_l1EvtTree = l1EvtTree->CloneTree(0);
-  dl1TowerTree->cd();
-  TTree* new_l1TowerTree = l1TowerTree->CloneTree(0);
+  // dl1TowerTree->cd();
+  // TTree* new_l1TowerTree = l1TowerTree->CloneTree(0);
   dl1ADC->cd();
   TTree* new_l1ADC = l1ADC->CloneTree(0);
 
@@ -74,23 +80,25 @@ int evtmatching(TString infforest, TString infl1, TString outfile, Long64_t nent
       if(j % 1000 == 0) std::cout<<j<<" / "<<entries<<"\r"<<std::flush;
 
       l1EvtTree->GetEntry(j); //
-      Long64_t k = lastmatch+1;
-      for(int no=0; no < hiroot_run.size(); no++)
+      Long64_t k = lastmatch+1, no = 0;
+      for(; no < hiroot_run.size(); no++)
         {
           k = k%hiroot_run.size();
           if(hiroot_evt[k]==Event->event && hiroot_lumi[k]==Event->lumi && hiroot_run[k]==Event->run)
             break;
           k++;
         }
-      if(k>=nhiroot) k = -1;
+      if(no>=nhiroot) k = -1;
       lastmatch = k;
-      // else
-      //   {
-      //     hiroot_run.erase(hiroot_run.begin() + k);
-      //     hiroot_evt.erase(hiroot_evt.begin() + k);
-      //     hiroot_lumi.erase(hiroot_lumi.begin() + k);
-      //   }
+      //
       matchingtable.push_back(k);
+      if(j % 10000 == 0)
+        {
+          std::cout<<Event->run<<"  "<<Event->lumi<<"  "<<Event->event<<" | ";
+          if(k>=0)
+            std::cout<<hiroot_run[k]<<"  "<<hiroot_lumi[k]<<"  "<<hiroot_evt[k];
+          std::cout<<std::endl;
+        }
       if(k>=0) { countmatch++; }
     }
   std::cout<<std::endl;
@@ -105,20 +113,25 @@ int evtmatching(TString infforest, TString infl1, TString outfile, Long64_t nent
       if(k<0) continue;
       hiroot->GetEntry(k); //
       skimroot->GetEntry(k); //
+      // zdcdigiroot->GetEntry(k); //
+      // zdcrechitroot->GetEntry(k); //
       l1ADC->GetEntry(j); //
       l1EvtTree->GetEntry(j); //
-      l1TowerTree->GetEntry(j); //
+      // l1TowerTree->GetEntry(j); //
 
       dl1EvtTree->cd();
       new_l1EvtTree->Fill();
-      dl1TowerTree->cd();
-      new_l1TowerTree->Fill();
+      // dl1TowerTree->cd();
+      // new_l1TowerTree->Fill();
       dl1ADC->cd();
       new_l1ADC->Fill();
       dhiroot->cd();
       new_hiroot->Fill();
       dskimroot->cd();
       new_skimroot->Fill();
+      // dzdcroot->cd();
+      // new_zdcdigiroot->Fill();
+      // new_zdcrechitroot->Fill();
     }
   std::cout<<std::endl;
 
