@@ -10,7 +10,7 @@ ZBrate["326822"]="6967215"
 ZBrate["327078"]="5146649"
 ZBrate["merge"]="6000000"
 
-for run in 326776 326822 327078 merge
+for run in 326822
 do
     input=/raid5/data/wangj/L1PbPb2022/skim_L1NtupleRAWEMUCalo_HFAdc_smallStat_${run}.root
     outputdir=ZB_data_${run}

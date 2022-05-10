@@ -19,5 +19,5 @@ namespace l1trigger
   std::vector<short int> cent = {0, 10, 140, 160, 180, 200};
   int ncent = cent.size()-1;
 
-  const int nadc = 40;
+  const int nadc = 30, nbincent = 20;
 }
