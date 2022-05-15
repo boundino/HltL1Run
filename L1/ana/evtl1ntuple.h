@@ -19,11 +19,12 @@ namespace l1trigger
     Float_t         mVz;
     Float_t         mZDCPlus;
     Float_t         mZDCMinus;
+    Float_t         mZDCRechitPlus;
+    Float_t         mZDCRechitMinus;
     Int_t           mMaxL1HFAdcPlus;
     Int_t           mMaxL1HFAdcMinus;
     Int_t           mNpixel;
     Int_t           mNtrkoffline;
-    Int_t           mNtrkHP;
     Bool_t          mTrigHLT[12];
     Bool_t          mEvtSel[18];
 
@@ -68,11 +69,12 @@ void l1trigger::evtl1ntuple::setbranchaddress()
   fnt->SetBranchAddress("mVz", &mVz);
   fnt->SetBranchAddress("mZDCPlus", &mZDCPlus);
   fnt->SetBranchAddress("mZDCMinus", &mZDCMinus);
+  fnt->SetBranchAddress("mZDCRechitPlus", &mZDCRechitPlus);
+  fnt->SetBranchAddress("mZDCRechitMinus", &mZDCRechitMinus);
   fnt->SetBranchAddress("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus);
   fnt->SetBranchAddress("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus);
   fnt->SetBranchAddress("mNpixel", &mNpixel);
   fnt->SetBranchAddress("mNtrkoffline", &mNtrkoffline);
-  fnt->SetBranchAddress("mNtrkHP", &mNtrkHP);
   fnt->SetBranchAddress("mTrigHLT", mTrigHLT);
   fnt->SetBranchAddress("mEvtSel", mEvtSel);
 }

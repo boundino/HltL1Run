@@ -5,17 +5,23 @@
 #include <string>
 #include "xjjcuti.h"
 #include "xjjrootuti.h"
+#include "config.h"
+
 #include "constant.h"
 
-int macro(std::string inputname, std::string outputdir, float ZBrate=1.e+7)
+int macro(std::string inputname, std::string outputdir, std::string param)
 {
+  auto conf = new xjjc::config(param);
+  float ZBrate = conf->vf("ZBrate");
+  std::cout<<"ZBrate = "<<ZBrate<<std::endl;
+
   TFile* inf = TFile::Open(inputname.c_str());
   TTree* tt = (TTree*)inf->Get("EvtTowerInfoNTuple");
   l1trigger::evtl1ntuple* nt = new l1trigger::evtl1ntuple(tt);
 
   // hist
   TH1F* hcent = new TH1F("hcent", ";Centrality;Entries", l1trigger::nbincent, 0, 100);
-  std::vector<TH1F*> hZDCdis(l1trigger::nDirs, 0), heffden(l1trigger::ncent, 0), 
+  std::vector<TH1F*> hZDCdis(l1trigger::nDirs, 0), hZDCdisGeV(l1trigger::nDirs, 0), heffden(l1trigger::ncent, 0), 
     hrate_And_ZDCAnd(l1trigger::nNeus, 0), hrate_And_ZDCAnd_pix(l1trigger::nNeus, 0),
     hrate_And_ZDCOr(l1trigger::nNeus, 0), hrate_And_ZDCOr_pix(l1trigger::nNeus, 0);
   xjjc::array2D<TH1F*> heff_And_ZDCAnd = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent), 
@@ -25,7 +31,10 @@ int macro(std::string inputname, std::string outputdir, float ZBrate=1.e+7)
     heffcent_And_ZDCAnd = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::nadc),
     heffcent_And_ZDCOr = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::nadc);
   for(int j=0; j<l1trigger::nDirs; j++)
-    hZDCdis[j] = new TH1F(Form("hZDCdis%s", l1trigger::mDir[j].c_str()), Form(";ZDC %s (a.u.);Entries", l1trigger::mDir[j].c_str()), 500, 0, 5.e+4);
+    {
+      hZDCdis[j] = new TH1F(Form("hZDCdis%s", l1trigger::mDir[j].c_str()), Form(";ZDC %s (a.u.);Entries", l1trigger::mDir[j].c_str()), 500, 0, 5.e+4);
+      hZDCdisGeV[j] = new TH1F(Form("hZDCdisGeV%s", l1trigger::mDir[j].c_str()), Form(";ZDC %s (GeV);Entries", l1trigger::mDir[j].c_str()), 500, 0, 1.5e+4);
+    }
   for(int k=0; k<l1trigger::nNeus; k++)
     {
       hrate_And_ZDCAnd[k] = new TH1F(Form("hrate_And_ZDCAnd_%dn", k), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc);
@@ -65,6 +74,8 @@ int macro(std::string inputname, std::string outputdir, float ZBrate=1.e+7)
       // ZDC distribution 
       hZDCdis[0]->Fill(nt->mZDCPlus);
       hZDCdis[1]->Fill(nt->mZDCMinus);
+      hZDCdisGeV[0]->Fill(nt->mZDCRechitPlus);
+      hZDCdisGeV[1]->Fill(nt->mZDCRechitMinus);
 
       if(nt->colEvtSel) hcent->Fill(nt->mCenBin/2.);
 
@@ -143,6 +154,7 @@ int macro(std::string inputname, std::string outputdir, float ZBrate=1.e+7)
   TFile* outf = new TFile(outputname.c_str(), "recreate");
 
   for(auto& h : hZDCdis) xjjroot::writehist(h);
+  for(auto& h : hZDCdisGeV) xjjroot::writehist(h);
   for(auto& h : hrate_And_ZDCAnd) xjjroot::writehist(h);
   for(auto& h : hrate_And_ZDCOr) xjjroot::writehist(h);
   for(auto& h : hrate_And_ZDCAnd_pix) xjjroot::writehist(h);
@@ -168,8 +180,7 @@ int macro(std::string inputname, std::string outputdir, float ZBrate=1.e+7)
 
 int main(int argc, char* argv[])
 {
-  if(argc==4) return macro(argv[1], argv[2], atof(argv[3]));
-  if(argc==3) return macro(argv[1], argv[2]);
+  if(argc==4) return macro(argv[1], argv[2], argv[3]);
   return 1;
 }
 

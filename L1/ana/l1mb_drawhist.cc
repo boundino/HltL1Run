@@ -79,7 +79,7 @@ int macro(std::string outputdir, std::string tag="")
   xjjroot::setthgrstyle(hcent, kBlack, 20, 0.2, kBlack, 1, 2);
 
   // hist
-  std::vector<TH1F*> hZDCdis(l1trigger::nDirs, 0), 
+  std::vector<TH1F*> hZDCdis(l1trigger::nDirs, 0), hZDCdisGeV(l1trigger::nDirs, 0),
     hrate_And_ZDCAnd(l1trigger::nNeus, 0), hrate_And_ZDCAnd_pix(l1trigger::nNeus, 0),
     hrate_And_ZDCOr(l1trigger::nNeus, 0), hrate_And_ZDCOr_pix(l1trigger::nNeus, 0);
   auto heff_And_ZDCAnd = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent),
@@ -97,6 +97,10 @@ int macro(std::string outputdir, std::string tag="")
       hZDCdis[j]->GetXaxis()->SetMaxDigits(3);
       xjjroot::sethempty(hZDCdis[j]);
       xjjroot::setthgrstyle(hZDCdis[j], kBlack, 20, 0.9);
+      hZDCdisGeV[j] = (TH1F*)inf->Get(Form("hZDCdisGeV%s", l1trigger::mDir[j].c_str()));
+      hZDCdisGeV[j]->GetXaxis()->SetMaxDigits(3);
+      xjjroot::sethempty(hZDCdisGeV[j]);
+      xjjroot::setthgrstyle(hZDCdisGeV[j], kBlack, 20, 0.9);
     }
   for(int k=0; k<l1trigger::nNeus; k++)
     {
@@ -198,6 +202,7 @@ int macro(std::string outputdir, std::string tag="")
   xjjroot::sethempty(hemptyeffcent);
 
   xjjroot::setgstyle(1);
+  gStyle->SetPadRightMargin(xjjroot::margin_pad_right*2);
   xjjroot::mypdf* pdf = new xjjroot::mypdf("plots/" + outputdir + "/per.pdf", "c", 700, 600);
 
   // HF_And_ZDCAnd/Or ROC
@@ -263,6 +268,21 @@ int macro(std::string outputdir, std::string tag="")
         {
           float biny = hZDCdis[j]->GetBinContent(hZDCdis[j]->FindBin(l1trigger::mNeuZDCLow[j][k]));
           xjjroot::drawline(l1trigger::mNeuZDCLow[j][k], hZDCdis[j]->GetMinimum(), 
+                            l1trigger::mNeuZDCLow[j][k], biny,
+                            color[k], 7, 4);
+          xjjroot::drawtexnum(l1trigger::mNeuZDCLow[j][k], biny*5, Form("(%dn)", k), 0.04, 22, 62, color[k]);
+        }
+      pdf->write();
+    }
+  for(int j=0; j<l1trigger::nDirs; j++)
+    {
+      pdf->prepare();
+      hZDCdisGeV[j]->Draw("p");
+      xjjroot::drawCMS("Internal", tag_.c_str());
+      for(int k=1; k<l1trigger::nNeus; k++)
+        {
+          float biny = hZDCdisGeV[j]->GetBinContent(hZDCdisGeV[j]->FindBin(l1trigger::mNeuZDCLow[j][k]));
+          xjjroot::drawline(l1trigger::mNeuZDCLow[j][k], hZDCdisGeV[j]->GetMinimum(), 
                             l1trigger::mNeuZDCLow[j][k], biny,
                             color[k], 7, 4);
           xjjroot::drawtexnum(l1trigger::mNeuZDCLow[j][k], biny*5, Form("(%dn)", k), 0.04, 22, 62, color[k]);
