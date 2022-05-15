@@ -225,6 +225,44 @@ int macro(std::string outputdir, std::string tag="")
       pdf->write();
     }
 
+  // HFcent_And_ZDCAnd/Or
+  pdf->prepare();
+  float frate = 20;
+  drawshadow(hemptyeffcent, 0);
+  for(int k=0; k<l1trigger::nNeus; k++)
+    {
+      int aAnd = nearest(hrate_And_ZDCAnd[k], frate),
+        aOr = nearest(hrate_And_ZDCOr[k], frate);
+      geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
+      geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
+    }
+  leg_And_ZDCAnd->Draw();
+  leg_And_ZDCOr->Draw();
+  t_And_ZDCAnd->Draw();
+  t_And_ZDCOr->Draw();
+  xjjroot::drawtex(0.88, 0.24, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
+  pdf->getc()->RedrawAxis();
+  pdf->write();
+
+  pdf->prepare();
+  frate = 30;
+  drawshadow(hemptyeffcent, 0);
+  for(int k=0; k<l1trigger::nNeus; k++)
+    {
+      int aAnd = nearest(hrate_And_ZDCAnd[k], frate),
+        aOr = nearest(hrate_And_ZDCOr[k], frate);
+      geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
+      geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
+    }
+  leg_And_ZDCAnd->Draw();
+  leg_And_ZDCOr->Draw();
+  t_And_ZDCAnd->Draw();
+  t_And_ZDCOr->Draw();
+  xjjroot::drawtex(0.88, 0.24, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
+  pdf->getc()->RedrawAxis();
+  pdf->write();
+
+
   // HF_And_ZDCAnd_pix/Or_pix Ntrk efficiency
   for(int l=0; l<l1trigger::ncent; l++)
     {
@@ -301,6 +339,7 @@ int macro(std::string outputdir, std::string tag="")
   pdf->getc()->RedrawAxis();
   pdf->write();
 
+
   // --> Individuals
   auto leg_ind1 = new TLegend(0.24, 0.80, 0.87, 0.85);
   leg_ind1->SetNColumns(2);
@@ -309,7 +348,7 @@ int macro(std::string outputdir, std::string tag="")
   leg_ind1->AddEntry(groc_And_ZDCOr[2][0], "HF + ZDC_OR (2n)", "pl");
 
   // >>
-  float frate = 20;
+  // float frate = 20;
   int a0 = nearest(hrate_And_ZDCAnd[0], frate),
     a2 = nearest(hrate_And_ZDCOr[2], frate);
   pdf->prepare();
