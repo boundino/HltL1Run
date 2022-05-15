@@ -7,7 +7,7 @@ then
 fi
 
 #
-MAXFILENO=10
+MAXFILENO=1000000
 
 #
 dccfile="evtmatch_inverse.cc"
@@ -22,7 +22,7 @@ INPUTS=(
 
 WORKDIR="/work/submit/$USER/l1evtmatch/"
 mkdir -p $WORKDIR
-OUTPUTVER=""
+OUTPUTVER="_fixmatch"
 
 for INP in "${INPUTS[@]}"
 do

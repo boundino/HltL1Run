@@ -46,6 +46,10 @@ private:
   int channel_digi[nZdcDigi];
   int adcTs[nZdcTs][nZdcDigi];
 
+  // mAdcTree
+  int m_MaxL1HFAdcPlus;
+  int m_MaxL1HFAdcMinus;
+
   // new tree
   unsigned int mRunNb = 0;
   unsigned int mLSNb = 0;
@@ -107,8 +111,8 @@ void EvtTowerInfoNTuple::setbranches()
   if(mAdcTree)
     {
       std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mAdcTree\e[0m"<<std::endl;
-      mAdcTree->SetBranchAddress("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus);
-      mAdcTree->SetBranchAddress("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus);
+      mAdcTree->SetBranchAddress("mMaxL1HFAdcPlus", &m_MaxL1HFAdcPlus);
+      mAdcTree->SetBranchAddress("mMaxL1HFAdcMinus", &m_MaxL1HFAdcMinus);
     }
   else
     std::cout<<__FUNCTION__<<" \e[31m(x) no tree: mAdcTree\e[0m"<<std::endl;
@@ -178,6 +182,10 @@ void EvtTowerInfoNTuple::calculate()
   mNpixel = hiNpix;
   mNtrkoffline = hiNtracks;
   mNpixelTracks = hiNpixelTracks;
+
+  // std::cout<<" "<<m_MaxL1HFAdcPlus<<std::endl;
+  mMaxL1HFAdcPlus = m_MaxL1HFAdcPlus;
+  mMaxL1HFAdcMinus = m_MaxL1HFAdcMinus;
 
   for(int i=0; i<nMaxTrigHLTBits; i++)
     mTrigHLT[i] = true;

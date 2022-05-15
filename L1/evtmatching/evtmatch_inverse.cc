@@ -91,12 +91,7 @@ int evtmatching(TString infforest, TString infl1, TString outfile, Long64_t nent
           std::cout<<std::endl;
         }
       if(matched)
-        { 
-          countmatch++; 
-          map_run.erase(map_run.begin() + k);
-          map_lumi.erase(map_lumi.begin() + k);
-          map_evt.erase(map_evt.begin() + k);
-        }
+        countmatch++; 
     }
   std::cout<<std::endl;
   std::cout<<"countmatch = "<<countmatch<<std::endl;
@@ -116,6 +111,7 @@ int evtmatching(TString infforest, TString infl1, TString outfile, Long64_t nent
       // l1EvtTree->GetEntry(k); //
       // l1TowerTree->GetEntry(k); //
 
+      // std::cout<<"--> "<<j<<", "<<k<<std::endl;
       nt->calculate();
 
       nt->t->Fill();
