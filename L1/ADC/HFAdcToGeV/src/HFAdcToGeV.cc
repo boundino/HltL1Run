@@ -79,9 +79,9 @@ private:
 
   // ----------member data ---------------------------
 
-  edm::ESHandle<HcalDbService> conditions;
-  const HcalDDDRecConstants *hcons;
-  const HcalTopology *htopology;
+  edm::ESGetToken<HcalDbService, HcalDbRecord> tok_conditions_;
+  edm::ESGetToken<HcalDDDRecConstants, HcalRecNumberingRecord> tok_hcaldd_;
+
   const int nchannel = 3456;
   int maxDepth_[5]; // 0:any, 1:HB, 2:HE, 3:HO, 4:HF
 
@@ -102,14 +102,14 @@ private:
 //
 // constructors and destructor
 //
-HFAdcToGeV::HFAdcToGeV(const edm::ParameterSet& iConfig)
+HFAdcToGeV::HFAdcToGeV(const edm::ParameterSet& iConfig) :
+  tok_conditions_(esConsumes<HcalDbService, HcalDbRecord>()),
+  tok_hcaldd_(esConsumes<HcalDDDRecConstants, HcalRecNumberingRecord>())
 // m_l1GtUtils(iConfig, consumesCollector(), true)//this is important for 80x to compile
 {
   const edm::InputTag hcalDigis("hcalDigis");
   tok_hfQIE10_ = consumes<QIE10DigiCollection>(iConfig.getUntrackedParameter<edm::InputTag>("digiLabel", hcalDigis));
   minimized_ = iConfig.getUntrackedParameter<bool>("minimized", false);
-  // tok_hfQIE10_ = consumes<QIE10DigiCollection>(inputLabel_);
-  /* inputLabel_(conf.getParameter<edm::InputTag>("digiLabel")) */
 }
 
 
@@ -142,7 +142,18 @@ void HFAdcToGeV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
   ampl_.clear();  
 
-  iSetup.get<HcalDbRecord>().get(conditions);
+  edm::ESHandle<HcalDDDRecConstants> pHRNDC = iSetup.getHandle(tok_hcaldd_);
+  const HcalDDDRecConstants *hcons = &(*pHRNDC);
+  maxDepth_[1] = hcons->getMaxDepth(0); // HB
+  maxDepth_[2] = hcons->getMaxDepth(1); // HE
+  maxDepth_[3] = hcons->getMaxDepth(3); // HO
+  maxDepth_[4] = hcons->getMaxDepth(2); // HF
+  maxDepth_[0] = (maxDepth_[1] > maxDepth_[2] ? maxDepth_[1] : maxDepth_[2]);
+  maxDepth_[0] = (maxDepth_[0] > maxDepth_[3] ? maxDepth_[0] : maxDepth_[3]);
+  maxDepth_[0] = (maxDepth_[0] > maxDepth_[4] ? maxDepth_[0] : maxDepth_[4]); // any of HB/HE/HO/HF
+
+  // iSetup.get<HcalDbRecord>().get(conditions);
+  edm::ESHandle<HcalDbService> conditions = iSetup.getHandle(tok_conditions_);
   edm::Handle<QIE10DigiCollection> digi;
   bool getdigitag = iEvent.getByToken(tok_hfQIE10_, digi);
   if(!getdigitag) std::cout << color_red+"HFAdcToGeV::analyze : invalid digiLabel ( - tok_hfQIE10_)"+color_nc << std::endl; 
@@ -272,19 +283,6 @@ HFAdcToGeV::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
     // could be added in beginRun(...) - if not added, the caching will be done in analyze/produce/filter method
     m_l1GtUtils.getL1GtRunCache(iRun, iSetup, useL1EventSetup, useL1GtTriggerMenuLite);
   */
-  edm::ESHandle<HcalDDDRecConstants> pHRNDC;
-  iSetup.get<HcalRecNumberingRecord>().get( pHRNDC );
-  hcons = &(*pHRNDC);
-   
-  htopology = new HcalTopology(hcons);
-  maxDepth_[1] = hcons->getMaxDepth(0); // HB
-  maxDepth_[2] = hcons->getMaxDepth(1); // HE
-  maxDepth_[3] = hcons->getMaxDepth(3); // HO
-  maxDepth_[4] = hcons->getMaxDepth(2); // HF
-  maxDepth_[0] = (maxDepth_[1] > maxDepth_[2] ? maxDepth_[1] : maxDepth_[2]);
-  maxDepth_[0] = (maxDepth_[0] > maxDepth_[3] ? maxDepth_[0] : maxDepth_[3]);
-  maxDepth_[0] = (maxDepth_[0] > maxDepth_[4] ? maxDepth_[0] : maxDepth_[4]); // any of HB/HE/HO/HF
-
 }
 
 // ------------ method called when ending the processing of a run  ------------
