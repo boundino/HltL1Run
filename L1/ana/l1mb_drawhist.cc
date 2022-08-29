@@ -31,7 +31,7 @@ void drawshadow(T* hempty, Color_t cc = kGray)
 {
   hempty->Draw("AXIS");
   xjjroot::drawCMS("Internal", tag_.c_str());
-  xjjroot::drawtex(0.88, 0.25, subtag_.c_str(), 0.04, 32, 52);
+  xjjroot::drawtex(0, 0.01, subtag_.c_str(), 0.035, 11, 52, kGray+1);
   if(cc > 0)
     {
       float prescls[] = {1, 1.5};
