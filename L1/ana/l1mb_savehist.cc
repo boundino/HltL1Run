@@ -9,11 +9,12 @@
 
 #include "constant.h"
 
-int macro(std::string inputname, std::string outputdir, std::string param)
+int macro(std::string param)
 {
-  auto conf = new xjjc::config(param);
-  float ZBrate = conf->vf("ZBrate");
-  std::cout<<"ZBrate = "<<ZBrate<<std::endl;
+  xjjc::config conf(param);
+  conf.print();
+  float ZBrate = conf.vf("ZBrate");
+  std::string inputname = conf["Input"], outputdir = conf["Output"];
 
   TFile* inf = TFile::Open(inputname.c_str());
   TTree* tt = (TTree*)inf->Get("EvtTowerInfoNTuple");
@@ -180,7 +181,7 @@ int macro(std::string inputname, std::string outputdir, std::string param)
 
 int main(int argc, char* argv[])
 {
-  if(argc==4) return macro(argv[1], argv[2], argv[3]);
+  if(argc==2) return macro(argv[1]);
   return 1;
 }
 

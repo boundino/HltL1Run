@@ -1,4 +1,5 @@
 #include "constant.h"
+#include "config.h"
 #include <TFile.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -74,8 +75,12 @@ int nearest(TH1F* h, float frate)
   return iresult;
 }
 
-int macro(std::string outputdir, std::string tag="")
+int macro(std::string param)
 {
+  xjjc::config conf(param);
+  conf.print();
+  std::string outputdir = conf["Output"], tag = conf["Tag"];
+
   TFile* inf = TFile::Open(Form("rootfiles/%s/savehist.root", outputdir.c_str()));
   tag_ = tag;
 
@@ -412,7 +417,7 @@ int macro(std::string outputdir, std::string tag="")
 
 int main(int argc, char* argv[])
 {
-  if(argc==3) return macro(argv[1], argv[2]);
+  if(argc==2) return macro(argv[1]);
   return 1;
 }
 
