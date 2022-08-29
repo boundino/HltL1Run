@@ -25,16 +25,23 @@ TGraph* roc(TH1F* hx, TH1F* hy, std::string name="")
 std::string tag_;
 float ZBrate;
 
-void drawshadow(TH2* hempty, Color_t cc = kGray+1)
+void drawshadow(TH2* hempty, Color_t cc = kGray)
 {
   hempty->Draw("AXIS");
   xjjroot::drawCMS("Internal", tag_.c_str());
   if(cc > 0)
     {
-      for(int p=2; p<=4; p++)
+      // for(int p=2; p<=4; p++)
+      //   {
+      //     xjjroot::drawbox(8*p, hempty->GetYaxis()->GetXmin(), 10*p, hempty->GetYaxis()->GetXmax(), kGray, 0.2);
+      //     xjjroot::drawtexnum(9*p, hempty->GetYaxis()->GetXmin() + (hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20., Form("Prescl = %d", p), 0.032, 22, 62, cc);
+      //   }
+      float prescls[] = {1, 1.5};
+      for(auto& pp : prescls)
         {
-          xjjroot::drawbox(8*p, hempty->GetYaxis()->GetXmin(), 10*p, hempty->GetYaxis()->GetXmax(), kGray, 0.2);
-          xjjroot::drawtexnum(9*p, hempty->GetYaxis()->GetXmin() + (hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20., Form("Prescl = %d", p), 0.032, 22, 62, cc);
+          xjjroot::drawline(pp*25, hempty->GetYaxis()->GetXmin(), pp*25, hempty->GetYaxis()->GetXmax()<2?1:hempty->GetYaxis()->GetXmax(), cc, 5, 2);
+          xjjroot::drawtexnum(pp*25-0.5, hempty->GetYaxis()->GetXmin() + (hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20., 
+                              Form("Prescl = %s", xjjc::number_remove_zero(pp).c_str()), 0.032, 32, 62, cc);
         }
       // xjjroot::drawtex(0.88, 0.24, Form("ZB rate: %.1f #times10^{6} Hz", ZBrate/1.e+6), 0.04, 32);
     }
@@ -63,7 +70,7 @@ int nearest(TH1F* h, float frate)
       dev = delta;
       iresult = i;
     }
-  std::cout<<__FUNCTION__<<": \e[1m"<<frate<<"kHz -> ("<<h->GetName()<<") ==> "<<h->GetBinContent(iresult+1)<<"\e[0m"<<std::endl;
+  std::cout<<__FUNCTION__<<": \e[1m"<<frate<<"kHz\e[0m: \e[1m("<<h->GetName()<<")\e[0m => \e[1m"<<Form("%.2f kHz", h->GetBinContent(iresult+1))<<" (ADC >= "<<iresult<<")\e[0m"<<std::endl;
   return iresult;
 }
 
@@ -227,7 +234,7 @@ int macro(std::string outputdir, std::string tag="")
 
   // HFcent_And_ZDCAnd/Or
   pdf->prepare();
-  float frate = 20;
+  float frate = 25;
   drawshadow(hemptyeffcent, 0);
   for(int k=0; k<l1trigger::nNeus; k++)
     {
@@ -243,25 +250,6 @@ int macro(std::string outputdir, std::string tag="")
   xjjroot::drawtex(0.88, 0.24, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
   pdf->getc()->RedrawAxis();
   pdf->write();
-
-  pdf->prepare();
-  frate = 30;
-  drawshadow(hemptyeffcent, 0);
-  for(int k=0; k<l1trigger::nNeus; k++)
-    {
-      int aAnd = nearest(hrate_And_ZDCAnd[k], frate),
-        aOr = nearest(hrate_And_ZDCOr[k], frate);
-      geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
-      geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
-    }
-  leg_And_ZDCAnd->Draw();
-  leg_And_ZDCOr->Draw();
-  t_And_ZDCAnd->Draw();
-  t_And_ZDCOr->Draw();
-  xjjroot::drawtex(0.88, 0.24, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
-  pdf->getc()->RedrawAxis();
-  pdf->write();
-
 
   // HF_And_ZDCAnd_pix/Or_pix Ntrk efficiency
   for(int l=0; l<l1trigger::ncent; l++)
