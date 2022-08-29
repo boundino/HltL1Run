@@ -11,9 +11,10 @@ const int nZdcHAD = 4;
 class EvtTowerInfoNTuple
 {
 public:
-  EvtTowerInfoNTuple(TTree* AdcTree, TTree* HiEvtTree, TTree* SkimTree, TTree* ZdcRechitTree=0, TTree* ZdcDigiTree=0);
+  EvtTowerInfoNTuple(TTree* AdcTree, TTree* HiEvtTree, TTree* SkimTree=0, TTree* ZdcRechitTree=0, TTree* ZdcDigiTree=0);
   TTree* t;
   void calculate();
+  void getentry(int j);
 
 private:
   TTree *mAdcTree, *mHiEvtTree, *mSkimTree, *mZdcRechitTree, *mZdcDigiTree;
@@ -76,6 +77,15 @@ EvtTowerInfoNTuple::EvtTowerInfoNTuple(TTree* AdcTree, TTree* HiEvtTree, TTree* 
   setbranches();
   branches();
 }
+
+void EvtTowerInfoNTuple::getentry(int j)
+{
+  mHiEvtTree->GetEntry(j);
+  if(mSkimTree) mSkimTree->GetEntry(j);
+  if(mAdcTree) mAdcTree->GetEntry(j);
+  if(mZdcRechitTree) mZdcRechitTree->GetEntry(j);
+  if(mZdcDigiTree) mZdcDigiTree->GetEntry(j);
+}  
 
 void EvtTowerInfoNTuple::setbranches()
 {
@@ -189,22 +199,29 @@ void EvtTowerInfoNTuple::calculate()
 
   for(int i=0; i<nMaxTrigHLTBits; i++)
     mTrigHLT[i] = true;
-  mEvtSel[0] = (bool)(pclusterCompatibilityFilter && pprimaryVertexFilter && pphfCoincFilter2Th4);
-  mEvtSel[1] = (bool)pphfCoincFilter2Th4;
-  mEvtSel[2] = (bool)pprimaryVertexFilter;
-  mEvtSel[3] = (bool)pclusterCompatibilityFilter;
-  for(int i=4; i<nMaxEvtSelBits; i++)
+
+  for(int i=0; i<nMaxEvtSelBits; i++)
     mEvtSel[i] = true;
+  if(mSkimTree)
+    {
+      mEvtSel[0] = (bool)(pclusterCompatibilityFilter && pprimaryVertexFilter && pphfCoincFilter2Th4);
+      mEvtSel[1] = (bool)pphfCoincFilter2Th4;
+      mEvtSel[2] = (bool)pprimaryVertexFilter;
+      mEvtSel[3] = (bool)pclusterCompatibilityFilter;
+    }
 
   // ZDC rechit
   mZDCRechitPlus = 0;
   mZDCRechitMinus = 0;
-  for(int i=0; i<nZdcRechit; i++)
+  if(mZdcRechitTree)
     {
-      float ei = e_rec[i];
-      if(zside_rec[i] == 1) mZDCRechitPlus += ei;
-      else if(zside_rec[i] == -1) mZDCRechitMinus += ei;
-      else std::cout<<"error: invalid zside_rec."<<std::endl;
+      for(int i=0; i<nZdcRechit; i++)
+        {
+          float ei = e_rec[i];
+          if(zside_rec[i] == 1) mZDCRechitPlus += ei;
+          else if(zside_rec[i] == -1) mZDCRechitMinus += ei;
+          else std::cout<<"error: invalid zside_rec."<<std::endl;
+        }
     }
 
   // ZDC digi
@@ -213,18 +230,21 @@ void EvtTowerInfoNTuple::calculate()
       mZDCHadPlus[i] = 0;
       mZDCHadMinus[i] = 0;
     }
-  for(int i=0; i<18; i++)
+  if(mZdcDigiTree)
     {
-      if(section_digi[i] != 2) continue;
-      if(channel_digi[i] < 1 || channel_digi[i] > 4)
-        { std::cout<<"error: invalid channel_digi."<<std::endl; continue; }
+      for(int i=0; i<18; i++)
+        {
+          if(section_digi[i] != 2) continue;
+          if(channel_digi[i] < 1 || channel_digi[i] > 4)
+            { std::cout<<"error: invalid channel_digi."<<std::endl; continue; }
 
-      int signal = adcTs[3][i]+adcTs[4][i] - 0.5*(adcTs[0][i] + adcTs[1][i]); // https://arxiv.org/abs/2102.06640
-      if(zside_digi[i] == 1)
-        mZDCHadPlus[channel_digi[i]-1] += signal;
-      else if(zside_digi[i] == -1)
-        mZDCHadMinus[channel_digi[i]-1] += signal;
-      else std::cout<<"error: invalid zside_digi."<<std::endl;
+          int signal = adcTs[3][i]+adcTs[4][i] - 0.5*(adcTs[0][i] + adcTs[1][i]); // https://arxiv.org/abs/2102.06640
+          if(zside_digi[i] == 1)
+            mZDCHadPlus[channel_digi[i]-1] += signal;
+          else if(zside_digi[i] == -1)
+            mZDCHadMinus[channel_digi[i]-1] += signal;
+          else std::cout<<"error: invalid zside_digi."<<std::endl;
+        }
     }
 }
 
