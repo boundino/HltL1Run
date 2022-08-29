@@ -9,7 +9,7 @@ comp="$(root-config --libs --cflags) -I$HOME"
 inputs=(
     configs/run326822.conf
     configs/run327327.conf 
-    # /raid5/data/wangj/L1PbPb2022/crab_HiForestADC_20220828_HydjetDrum5F_5p02TeV_122X_2021_realistic_HI_v10.root,
+    configs/mcHydjetDrum5F122X.conf
 )
 
 for ii in ${inputs[@]}
