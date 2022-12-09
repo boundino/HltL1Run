@@ -31,6 +31,9 @@
 #include "Geometry/HcalCommonData/interface/HcalDDDRecConstants.h"
 #include "Geometry/CaloTopology/interface/HcalTopology.h"
 
+#include "DataFormats/CaloTowers/interface/CaloTower.h"
+#include "DataFormats/CaloTowers/interface/CaloTowerDefs.h"
+
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "TTree.h"
@@ -46,7 +49,10 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
   edm::EDGetTokenT<QIE10DigiCollection> tok_hfQIE10_;
+  edm::EDGetTokenT<CaloTowerCollection> towers_;
+
   bool minimized_;
+  bool fillhf_;
 
   int nampl_;
   std::vector<int> ieta_;
@@ -62,6 +68,13 @@ public:
   std::vector<int> ampl_;
   int mMaxL1HFAdcPlus_;
   int mMaxL1HFAdcMinus_;
+
+  // hf information
+  int nhfp_;
+  int nhfn_;
+  float hft_;
+  float hftp_;
+  float hftm_;
 
 private:
   // L1GtUtils m_l1GtUtils;
@@ -81,6 +94,8 @@ private:
 
   edm::ESGetToken<HcalDbService, HcalDbRecord> tok_conditions_;
   edm::ESGetToken<HcalDDDRecConstants, HcalRecNumberingRecord> tok_hcaldd_;
+
+  void fill_hf(const edm::Event& iEvent);
 
   const int nchannel = 3456;
   int maxDepth_[5]; // 0:any, 1:HB, 2:HE, 3:HO, 4:HF
@@ -110,6 +125,11 @@ HFAdcToGeV::HFAdcToGeV(const edm::ParameterSet& iConfig) :
   const edm::InputTag hcalDigis("hcalDigis");
   tok_hfQIE10_ = consumes<QIE10DigiCollection>(iConfig.getUntrackedParameter<edm::InputTag>("digiLabel", hcalDigis));
   minimized_ = iConfig.getUntrackedParameter<bool>("minimized", false);
+  fillhf_ = iConfig.getParameter<bool>("fillhf");
+  const edm::InputTag towerMaker("towerMaker");
+  if (fillhf_) {
+    towers_ = consumes<CaloTowerCollection>(iConfig.getUntrackedParameter<edm::InputTag>("tower_tag", towerMaker));
+  }
 }
 
 
@@ -236,7 +256,41 @@ void HFAdcToGeV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
             }
         }
     }
+
+  if(fillhf_) fill_hf(iEvent);
+
   root->Fill();
+}
+
+void HFAdcToGeV::fill_hf(const edm::Event& iEvent) {
+  edm::Handle<CaloTowerCollection> ts;
+  iEvent.getByToken(towers_, ts);
+  const CaloTowerCollection* towers = ts.product();
+
+  int nhfn = 0;
+  int nhfp = 0;
+
+  float hftp = 0;
+  float hftm = 0;
+
+  for (const auto& cal : *towers) {
+    if (cal.ietaAbs() < 30) { continue; }
+
+    if (cal.zside() > 0) {
+      if (cal.energy() > 3.) { nhfp++; }
+      hftp += cal.pt();
+    } else {
+      if (cal.energy() > 3.) { nhfn++; }
+      hftm += cal.pt();
+    }
+  }
+
+  nhfp_ = nhfp;
+  nhfn_ = nhfn;
+
+  hft_ = hftp + hftm;
+  hftp_ = hftp;
+  hftm_ = hftm;
 }
 
 // ------------ method called once each job just before starting event loop  ------------
@@ -263,6 +317,15 @@ HFAdcToGeV::beginJob()
 
       root->Branch("ampl", &ampl_);
     }
+
+  // if(fillhf_)
+  //   {
+      root->Branch("nhfp", &nhfp_);
+      root->Branch("nhfn", &nhfn_);
+      root->Branch("hft", &hft_);
+      root->Branch("hftp", &hftp_);
+      root->Branch("hftm", &hftm_);
+    // }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
