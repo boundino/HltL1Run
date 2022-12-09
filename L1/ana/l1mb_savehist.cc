@@ -15,6 +15,7 @@ int macro(std::string param)
   conf.print();
   float ZBrate = conf.vf("ZBrate");
   std::string inputname = conf["Input"], outputdir = conf["Output"];
+  l1trigger::setcent(conf);
 
   TFile* inf = TFile::Open(inputname.c_str());
   TTree* tt = (TTree*)inf->Get("EvtTowerInfoNTuple");
@@ -25,6 +26,7 @@ int macro(std::string param)
   std::vector<TH1F*> hZDCdis(l1trigger::nDirs, 0), hZDCdisGeV(l1trigger::nDirs, 0), heffden(l1trigger::ncent, 0), 
     hrate_And_ZDCAnd(l1trigger::nNeus, 0), hrate_And_ZDCAnd_pix(l1trigger::nNeus, 0),
     hrate_And_ZDCOr(l1trigger::nNeus, 0), hrate_And_ZDCOr_pix(l1trigger::nNeus, 0);
+  std::vector<TH1F*> hrate_And_ZDCAnd_frac(l1trigger::nNeus, 0), hrate_And_ZDCOr_frac(l1trigger::nNeus, 0);
   xjjc::array2D<TH1F*> heff_And_ZDCAnd = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent), 
     heff_And_ZDCOr = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent), 
     heff_And_ZDCAnd_pix = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent),
@@ -70,7 +72,8 @@ int macro(std::string param)
       if(!nt->ZB_HLTBit) continue;
       nZB_HLT++;
       int icent = xjjc::findibin<Short_t>(l1trigger::cent, nt->mCenBin);
-      if(icent<0) { std::cout<<"error: bad icent. ("<<nt->mCenBin<<")"<<std::endl; continue; }
+      // if(icent<0) { /*std::cout<<"error: bad icent. ("<<nt->mCenBin<<")"<<std::endl;*/ continue; }
+      if(icent<0) { /*std::cout<<"error: bad icent. ("<<nt->mCenBin<<")"<<std::endl;*/ icent = 0; }
 
       // ZDC distribution 
       hZDCdis[0]->Fill(nt->mZDCPlus);
@@ -87,7 +90,7 @@ int macro(std::string param)
             heffden[icent]->Fill(a);
           for(int k=0; k<l1trigger::nNeus; k++)
             {
-              if(nt->AdcAND >= a)
+              if(nt->AdcAND > a)
                 {
                   if(nt->mZDCPlus >= l1trigger::mNeuZDCLow[0][k] && nt->mZDCMinus >= l1trigger::mNeuZDCLow[1][k])
                     {
@@ -125,10 +128,17 @@ int macro(std::string param)
 
   TH1F* hrateZB = new TH1F("hrateZB", ";L1 HF threshold (ADC);", 1, 0, 1);
   hrateZB->SetBinContent(1, ZBrate);
+  for(int k=0; k<l1trigger::nNeus; k++)
+    {
+      hrate_And_ZDCAnd_frac[k] = (TH1F*)hrate_And_ZDCAnd[k]->Clone(Form("hrate_And_ZDCAnd_frac_%dn", k));
+      hrate_And_ZDCOr_frac[k] = (TH1F*)hrate_And_ZDCOr[k]->Clone(Form("hrate_And_ZDCOr_frac_%dn", k));
+    }
   for(auto& h : hrate_And_ZDCAnd) h->Scale(ZBrate/nZB_HLT/1.e+3);
   for(auto& h : hrate_And_ZDCAnd_pix) h->Scale(ZBrate/nZB_HLT/1.e+3);
   for(auto& h : hrate_And_ZDCOr) h->Scale(ZBrate/nZB_HLT/1.e+3);
   for(auto& h : hrate_And_ZDCOr_pix) h->Scale(ZBrate/nZB_HLT/1.e+3);
+  for(auto& h : hrate_And_ZDCAnd_frac) h->Scale(1./nZB_HLT);
+  for(auto& h : hrate_And_ZDCOr_frac) h->Scale(1./nZB_HLT);
   for(int k=0; k<l1trigger::nNeus; k++)
     {
       for(int l=0; l<l1trigger::ncent; l++)
@@ -160,6 +170,8 @@ int macro(std::string param)
   for(auto& h : hrate_And_ZDCOr) xjjroot::writehist(h);
   for(auto& h : hrate_And_ZDCAnd_pix) xjjroot::writehist(h);
   for(auto& h : hrate_And_ZDCOr_pix) xjjroot::writehist(h);
+  for(auto& h : hrate_And_ZDCAnd_frac) xjjroot::writehist(h);
+  for(auto& h : hrate_And_ZDCOr_frac) xjjroot::writehist(h);
   for(auto& h : heff_And_ZDCAnd)
     for(auto& hh : h) xjjroot::writehist(hh);
   for(auto& h : heff_And_ZDCOr)

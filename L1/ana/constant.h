@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include "config.h"
 
 namespace l1trigger
 {
@@ -20,8 +21,15 @@ namespace l1trigger
   //   {6.0e3, 16.e3, 32.e3, 6.e5}
   // };
 
-  std::vector<short int> cent = {0, 10, 140, 160, 180, 200};
-  int ncent = cent.size()-1;
+  std::vector<std::vector<short int>> cents = {{0, 200}, 
+                                               {0, 10, 140, 160, 180, 200}};
+  std::vector<short int> cent; int ncent;
+  void setcent(xjjc::config& conf)
+  {
+    int i = conf.vi("Opt_cent");
+    cent = cents[i];
+    ncent = cent.size()-1;
+  }
 
   const int nadc = 30, nbincent = 20;
 }

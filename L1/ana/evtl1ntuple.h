@@ -21,6 +21,8 @@ namespace l1trigger
     Float_t         mZDCMinus;
     Float_t         mZDCRechitPlus;
     Float_t         mZDCRechitMinus;
+    Int_t           mHFnhfp;
+    Int_t           mHFnhfn;
     Int_t           mMaxL1HFAdcPlus;
     Int_t           mMaxL1HFAdcMinus;
     Int_t           mNpixel;

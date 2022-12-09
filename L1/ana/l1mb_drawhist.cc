@@ -25,6 +25,7 @@ TGraph* roc(TH1F* hx, TH1F* hy, std::string name="")
 }
 std::string tag_, subtag_;
 float ZBrate;
+int printrate(TH1F* h);
 
 template<class T>
 void drawshadow(T* hempty, Color_t cc = kGray)
@@ -56,6 +57,15 @@ void drawgrval(TGraph* gr, TH2* hempty, bool val = true)
       }
 }
 
+void drawhfth(TGraph* gr, TH2* hempty)
+{
+  for(int i=0; i<gr->GetN(); i++)
+    {
+      double x = gr->GetPointX(i), y = gr->GetPointY(i);
+      xjjroot::drawtexnum(x, y+(hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20., Form("%d", i), 0.03, 23, 42, gr->GetMarkerColor());
+    }
+}
+
 int nearest(TH1F* h, float frate)
 {
   int iresult = -1;
@@ -77,6 +87,7 @@ int macro(std::string param)
   conf.print();
   std::string outputdir = conf["Output"];
   tag_ = conf["Tag"]; subtag_ = conf["SubTag"];
+  l1trigger::setcent(conf);
 
   TFile* inf = TFile::Open(Form("rootfiles/%s/savehist.root", outputdir.c_str()));
 
@@ -88,8 +99,9 @@ int macro(std::string param)
 
   // hist
   std::vector<TH1F*> hZDCdis(l1trigger::nDirs, 0), hZDCdisGeV(l1trigger::nDirs, 0),
-    hrate_And_ZDCAnd(l1trigger::nNeus, 0), hrate_And_ZDCAnd_pix(l1trigger::nNeus, 0),
-    hrate_And_ZDCOr(l1trigger::nNeus, 0), hrate_And_ZDCOr_pix(l1trigger::nNeus, 0);
+    hrate_And_ZDCAnd(l1trigger::nNeus, 0), hrate_And_ZDCOr(l1trigger::nNeus, 0), 
+    hrate_And_ZDCAnd_pix(l1trigger::nNeus, 0), hrate_And_ZDCOr_pix(l1trigger::nNeus, 0),
+    hrate_And_ZDCAnd_frac(l1trigger::nNeus, 0), hrate_And_ZDCOr_frac(l1trigger::nNeus, 0);
   auto heff_And_ZDCAnd = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent),
     heff_And_ZDCOr = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent),
     heff_And_ZDCAnd_pix = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent),
@@ -113,9 +125,11 @@ int macro(std::string param)
   for(int k=0; k<l1trigger::nNeus; k++)
     {
       hrate_And_ZDCAnd[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCAnd_%dn", k));
-      hrate_And_ZDCAnd_pix[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCAnd_pix_%dn", k));
       hrate_And_ZDCOr[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCOr_%dn", k));
+      hrate_And_ZDCAnd_pix[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCAnd_pix_%dn", k));
       hrate_And_ZDCOr_pix[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCOr_pix_%dn", k));
+      hrate_And_ZDCAnd_frac[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCAnd_frac_%dn", k));
+      hrate_And_ZDCOr_frac[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCOr_frac_%dn", k));
       for(int l=0; l<l1trigger::ncent; l++)
         {
           heff_And_ZDCAnd[k][l] = (TH1F*)inf->Get(Form("heff_And_ZDCAnd_%dn_%d", k, l));
@@ -151,30 +165,30 @@ int macro(std::string param)
   for(int k=0; k<l1trigger::nNeus; k++)
     {
       grate_And_ZDCAnd[k] = roc(hrate_And_ZDCAnd[k], hrate_And_ZDCAnd_pix[k], Form("grate_And_ZDCAnd_%dn", k));
-      xjjroot::setthgrstyle(grate_And_ZDCAnd[k], color[k], 20, 1.1, color[k], 1, 3);
+      xjjroot::setthgrstyle(grate_And_ZDCAnd[k], color[k], 20, 1.1, color[k], 1, 2);
       grate_And_ZDCOr[k] = roc(hrate_And_ZDCOr[k], hrate_And_ZDCOr_pix[k], Form("grate_And_ZDCOr_%dn", k));
-      xjjroot::setthgrstyle(grate_And_ZDCOr[k], color[k], 25, 1.1, color[k], 2, 3);
+      xjjroot::setthgrstyle(grate_And_ZDCOr[k], color[k], 25, 1.1, color[k], 2, 2);
       for(int l=0; l<l1trigger::ncent; l++)
         {
           groc_And_ZDCAnd[k][l] = roc(hrate_And_ZDCAnd[k], heff_And_ZDCAnd[k][l], Form("groc_And_ZDCAnd_%dn_%d", k, l));
-          xjjroot::setthgrstyle(groc_And_ZDCAnd[k][l], color[k], 20, 1.1, color[k], 1, 3);
+          xjjroot::setthgrstyle(groc_And_ZDCAnd[k][l], color[k], 20, 1.1, color[k], 1, 2);
           groc_And_ZDCAnd_pix[k][l] = roc(hrate_And_ZDCAnd[k], heff_And_ZDCAnd_pix[k][l], Form("groc_And_ZDCAnd_pix_%dn_%d", k, l)); //
-          xjjroot::setthgrstyle(groc_And_ZDCAnd_pix[k][l], color[k], 47, 1.1, color[k], 6, 3);
+          xjjroot::setthgrstyle(groc_And_ZDCAnd_pix[k][l], color[k], 47, 1.1, color[k], 6, 2);
           greleff_And_ZDCAnd[k][l] = roc(hrate_And_ZDCAnd[k], hreleff_And_ZDCAnd_pix[k][l], Form("greleff_And_ZDCAnd_%dn_%d", k, l));
-          xjjroot::setthgrstyle(greleff_And_ZDCAnd[k][l], color[k], 20, 1.1, color[k], 1, 3);
+          xjjroot::setthgrstyle(greleff_And_ZDCAnd[k][l], color[k], 20, 1.1, color[k], 1, 2);
           groc_And_ZDCOr[k][l] = roc(hrate_And_ZDCOr[k], heff_And_ZDCOr[k][l], Form("groc_And_ZDCOr_%dn_%d", k, l));
-          xjjroot::setthgrstyle(groc_And_ZDCOr[k][l], color[k], 25, 1.1, color[k], 2, 3);
+          xjjroot::setthgrstyle(groc_And_ZDCOr[k][l], color[k], 25, 1.1, color[k], 2, 2);
           groc_And_ZDCOr_pix[k][l] = roc(hrate_And_ZDCOr[k], heff_And_ZDCOr_pix[k][l], Form("groc_And_ZDCOr_pix_%dn_%d", k, l));
-          xjjroot::setthgrstyle(groc_And_ZDCOr_pix[k][l], color[k], 46, 1.1, color[k], 6, 3);
+          xjjroot::setthgrstyle(groc_And_ZDCOr_pix[k][l], color[k], 46, 1.1, color[k], 6, 2);
           greleff_And_ZDCOr[k][l] = roc(hrate_And_ZDCOr[k], hreleff_And_ZDCOr_pix[k][l], Form("greleff_And_ZDCOr_%dn_%d", k, l));
-          xjjroot::setthgrstyle(greleff_And_ZDCOr[k][l], color[k], 25, 1.1, color[k], 2, 3);
+          xjjroot::setthgrstyle(greleff_And_ZDCOr[k][l], color[k], 25, 1.1, color[k], 2, 2);
         }
       for(int a=0; a<l1trigger::nadc; a++)
         {
           geffcent_And_ZDCAnd[k][a] = xjjana::shifthistcenter(heffcent_And_ZDCAnd[k][a], Form("geffcent_And_ZDCAnd_%dn_%d", k, a), 0, "X0Y0");
-          xjjroot::setthgrstyle(geffcent_And_ZDCAnd[k][a], color[k], 20, 1.1, color[k], 1, 3);
+          xjjroot::setthgrstyle(geffcent_And_ZDCAnd[k][a], color[k], 20, 1.1, color[k], 1, 2);
           geffcent_And_ZDCOr[k][a] = xjjana::shifthistcenter(heffcent_And_ZDCOr[k][a], Form("geffcent_And_ZDCOr_%dn_%d", k, a), 0, "X0Y0");
-          xjjroot::setthgrstyle(geffcent_And_ZDCOr[k][a], color[k], 25, 1.1, color[k], 2, 3);
+          xjjroot::setthgrstyle(geffcent_And_ZDCOr[k][a], color[k], 25, 1.1, color[k], 2, 2);
         }
     }
 
@@ -182,7 +196,7 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     {
       gr_heff_AND_HFOnly[l] = xjjana::shifthistcenter(heff_And_ZDCAnd[0][l], Form("gr_%s", heff_And_ZDCAnd[0][l]->GetName()), (int)-1);
-      xjjroot::setthgrstyle(gr_heff_AND_HFOnly[l], color[l], 54, 1.1, color[l], 1, 3);
+      xjjroot::setthgrstyle(gr_heff_AND_HFOnly[l], color[l], 20, 1.1, color[l], 1, 2);
     }
 
   // leg
@@ -212,7 +226,7 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     leg_And_HFOnly->AddEntry(gr_heff_AND_HFOnly[l], Form("Cent. %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), "p");
 
-  auto hempty = new TH2F("hempty", ";L1 Rate [kHz];Efficiency", 10, 10, 40, 10, 0, 1.35);
+  auto hempty = new TH2F("hempty", ";L1 Rate [kHz];Efficiency", 10, 10, 10000, 10, 0, 1.35);
   xjjroot::sethempty(hempty);
   auto hemptyeff = new TH2F("hemptyeff", ";L1 Rate [kHz];#frac{Efficiency (w/ Ntrk > 0)}{Efficiency (w/o Ntrk > 0)}", 10, 10, 40, 10, 0, 1.35);
   xjjroot::sethempty(hemptyeff);
@@ -239,6 +253,7 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     {
       pdf->prepare();
+      pdf->getc()->SetLogx();
       drawshadow(hempty);
 
       for(int k=0; k<l1trigger::nNeus; k++)
@@ -246,14 +261,36 @@ int macro(std::string param)
           groc_And_ZDCAnd[k][l]->Draw("same pl");
           groc_And_ZDCOr[k][l]->Draw("same pl");
         }
+      drawhfth(groc_And_ZDCAnd[0][l], hempty);
       leg_And_ZDCAnd->Draw();
       leg_And_ZDCOr->Draw();
       t_And_ZDCAnd->Draw();
       t_And_ZDCOr->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->getc()->RedrawAxis();
-      pdf->write();
+      pdf->write(); 
+      pdf->getc()->SetLogx(0);
+   }
+
+  // HFcent_And
+  auto leg_And_cent = new TLegend(0.30, 0.40, 0.70, 0.55);
+  xjjroot::setleg(leg_And_cent, 0.038);
+  leg_And_cent->SetHeader("L1_MinimumBiasHF1_AND_BptxAND");
+  pdf->prepare();
+  drawshadow(hemptyeffcent, 0);
+  std::vector<int> thrs = {14, 10};
+  for(auto a : thrs)
+    {
+      auto gth = (TGraphAsymmErrors*)geffcent_And_ZDCAnd[0][a]->Clone(Form("gth%d", a));
+      if(a==14) gth->SetMarkerStyle(53);
+      gth->Draw("same pl");
+      // geffcent_And_ZDCAnd[0][a]->Draw("same pl");
+      leg_And_cent->AddEntry(gth, Form("HF %d", a), "p");
     }
+  leg_And_cent->Draw();
+  // xjjroot::drawtex(0.88, 0.30, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
+  pdf->getc()->RedrawAxis();
+  pdf->write();
 
   // HFcent_And_ZDCAnd/Or
   pdf->prepare();
@@ -344,7 +381,7 @@ int macro(std::string param)
   pdf->prepare();
   hcent->SetMinimum(0);
   drawshadow(hcent, 0);
-  xjjroot::drawbox(85, hcent->GetMinimum(), 100, hcent->GetMaximum());
+  // xjjroot::drawbox(85, hcent->GetMinimum(), 100, hcent->GetMaximum());
   hcent->Draw("hist e same");
   xjjroot::drawtex(0.24, 0.85, "Applied Offline Event Selection", 0.04, 13);
   pdf->getc()->RedrawAxis();
@@ -374,12 +411,14 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     {
       pdf->prepare();
+      pdf->getc()->SetLogx();
       drawshadow(hempty);
       drawgrval(groc_And_ZDCAnd[0][l], hempty);
       drawgrval(groc_And_ZDCOr[2][l], hempty);
       leg_ind1->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->write();
+      pdf->getc()->SetLogx(0);
     }
 
   // >>
@@ -393,7 +432,8 @@ int macro(std::string param)
   leg_ind->AddEntry(groc_And_ZDCOr_pix[2][0], "HF + ZDC_OR(2n) + Ntrk", "pl");
   for(int l=0; l<l1trigger::ncent; l++)
     {
-      pdf->prepare();
+      pdf->prepare(); 
+      pdf->getc()->SetLogx();
       drawshadow(hempty);
       drawgrval(groc_And_ZDCAnd[0][l], hempty);
       drawgrval(groc_And_ZDCAnd_pix[0][l], hempty);
@@ -402,6 +442,7 @@ int macro(std::string param)
       leg_ind->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->write();
+      pdf->getc()->SetLogx(0);
     }
 
   // >>
@@ -427,8 +468,9 @@ int macro(std::string param)
   pdf->getc()->RedrawAxis();
   pdf->write();
 
-
   pdf->close();
+
+  printrate(hrate_And_ZDCAnd_frac[0]);
 
   return 0;
 }
@@ -439,3 +481,12 @@ int main(int argc, char* argv[])
   return 1;
 }
 
+int printrate(TH1F* h)
+{
+  xjjc::prt_divider();
+  std::cout<<h->GetName()<<std::endl;
+  for(int i=0; i<h->GetXaxis()->GetNbins(); i++)
+    std::cout<<i<<"  "<<h->GetBinContent(i+1)<<std::endl;
+  xjjc::prt_divider();
+  return 0;
+}
