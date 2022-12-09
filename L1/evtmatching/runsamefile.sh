@@ -1,7 +1,9 @@
 #!/bin/bash
 
-FOREST=/raid5/data/wangj/L1PbPb2022/crab_HiForestADC_20220828_HydjetDrum5F_5p02TeV_122X_2021_realistic_HI_v10.root
-OUTPUT=/raid5/data/wangj/L1PbPb2022/evtmatching_HiForestADC_20220828_HydjetDrum5F_5p02TeV_122X_2021_realistic_HI_v10.root
+FOREST=/raid5/data/wangj/L1PbPb2022/crab_adcRAW_221124_HITestRaw0_HIRun2022A_ZBPVfil_362294-6.root
+OUTPUT=/raid5/data/wangj/L1PbPb2022/evtmatching_adcRAW_221124_HITestRaw0_HIRun2022A_ZBPVfil_362294-6.root
+# FOREST=/raid5/data/wangj/L1PbPb2022/HiForestMiniAOD_362294_100k_ZB_nhfTh4.root
+# OUTPUT=/raid5/data/wangj/L1PbPb2022/evtmatching_HiForestMiniAOD_362294_100k_ZB_nhf2Th4.root
 
 tmp=$(date +%y%m%d%H%M%S)
 

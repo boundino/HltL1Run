@@ -20,7 +20,7 @@ int evtmatching(std::string inf, std::string outfile)
   TFile* outf = new TFile(outfile.c_str(), "recreate");
   EvtTowerInfoNTuple* nt = new EvtTowerInfoNTuple(l1ADC, hiroot, skimroot, zdcrechitroot, zdcdigiroot);
 
-  int entries = hiroot->GetEntries();
+  int entries = l1ADC->GetEntries();
   for(Long64_t j = 0; j<entries; j++)
     {
       if(j % 10000 == 0) std::cout<<j<<" / "<<entries<<"\r"<<std::flush;

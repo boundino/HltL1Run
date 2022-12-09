@@ -1,6 +1,9 @@
 #ifndef __MAKETREE_H_
 #define __MAKETREE_H_
 
+// #include "cent/cent_MC_122X.h"
+#include "cent/cent_data.h"
+
 const int nMaxEvtSelBits = 18;
 const int nMaxTrigHLTBits = 12;
 const int nZdcRechit = 18;
@@ -24,6 +27,7 @@ private:
   UInt_t lumi;
   ULong64_t evt;
   int hiBin;
+  float hiHF;
   float vx, vy, vz;
   float hiZDCplus, hiZDCminus;
   int hiNpix, hiNtracks, hiNpixelTracks;
@@ -50,6 +54,11 @@ private:
   // mAdcTree
   int m_MaxL1HFAdcPlus;
   int m_MaxL1HFAdcMinus;
+  int nhfp;
+  int nhfn;
+  float hft;
+  float hftp;
+  float hftm;
 
   // new tree
   unsigned int mRunNb = 0;
@@ -59,6 +68,8 @@ private:
   float        mVx, mVy, mVz;
   float        mZDCPlus, mZDCMinus;
   float        mZDCRechitPlus, mZDCRechitMinus;
+  int          mHFnhfp, mHFnhfn;
+  float        mHFhft, mHFhftp, mHFhftm;
   int          mMaxL1HFAdcPlus, mMaxL1HFAdcMinus;
   int          mNpixel, mNtrkoffline, mNpixelTracks;
   Bool_t       mTrigHLT[nMaxTrigHLTBits];
@@ -80,7 +91,7 @@ EvtTowerInfoNTuple::EvtTowerInfoNTuple(TTree* AdcTree, TTree* HiEvtTree, TTree* 
 
 void EvtTowerInfoNTuple::getentry(int j)
 {
-  mHiEvtTree->GetEntry(j);
+  if(mHiEvtTree) mHiEvtTree->GetEntry(j);
   if(mSkimTree) mSkimTree->GetEntry(j);
   if(mAdcTree) mAdcTree->GetEntry(j);
   if(mZdcRechitTree) mZdcRechitTree->GetEntry(j);
@@ -96,6 +107,7 @@ void EvtTowerInfoNTuple::setbranches()
       mHiEvtTree->SetBranchAddress("lumi", &lumi);
       mHiEvtTree->SetBranchAddress("evt", &evt);
       mHiEvtTree->SetBranchAddress("hiBin", &hiBin);
+      mHiEvtTree->SetBranchAddress("hiHF", &hiHF);
       mHiEvtTree->SetBranchAddress("vx", &vx);
       mHiEvtTree->SetBranchAddress("vy", &vy);
       mHiEvtTree->SetBranchAddress("vz", &vz);
@@ -111,7 +123,7 @@ void EvtTowerInfoNTuple::setbranches()
   if(mSkimTree)
     {
       std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mSkimTree\e[0m"<<std::endl;
-      mSkimTree->SetBranchAddress("pphfCoincFilter2Th4", &pphfCoincFilter2Th4);
+      /* mSkimTree->SetBranchAddress("pphfCoincFilter2Th4", &pphfCoincFilter2Th4); */
       mSkimTree->SetBranchAddress("pprimaryVertexFilter", &pprimaryVertexFilter);
       mSkimTree->SetBranchAddress("pclusterCompatibilityFilter", &pclusterCompatibilityFilter);
     }
@@ -123,6 +135,11 @@ void EvtTowerInfoNTuple::setbranches()
       std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mAdcTree\e[0m"<<std::endl;
       mAdcTree->SetBranchAddress("mMaxL1HFAdcPlus", &m_MaxL1HFAdcPlus);
       mAdcTree->SetBranchAddress("mMaxL1HFAdcMinus", &m_MaxL1HFAdcMinus);
+      mAdcTree->SetBranchAddress("nhfp", &nhfp);
+      mAdcTree->SetBranchAddress("nhfn", &nhfn);
+      mAdcTree->SetBranchAddress("hftp", &hftp);
+      mAdcTree->SetBranchAddress("hftm", &hftm);
+      mAdcTree->SetBranchAddress("hft", &hft);
     }
   else
     std::cout<<__FUNCTION__<<" \e[31m(x) no tree: mAdcTree\e[0m"<<std::endl;
@@ -169,6 +186,11 @@ void EvtTowerInfoNTuple::branches()
   t->Branch("mZDCRechitMinus", &mZDCRechitMinus, "mZDCRechitMinus/F");
   t->Branch("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus, "mMaxL1HFAdcPlus/I");
   t->Branch("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus, "mMaxL1HFAdcMinus/I");
+  t->Branch("mHFnhfp", &mHFnhfp, "mHFnhfp/I");
+  t->Branch("mHFnhfn", &mHFnhfn, "mHFnhfn/I");
+  t->Branch("mHFhftp", &mHFhftp, "mHFhftp/F");
+  t->Branch("mHFhftm", &mHFhftm, "mHFhftm/F");
+  t->Branch("mHFhft", &mHFhft, "mHFhft/F");
   t->Branch("mNpixel", &mNpixel, "mNpixel/I");
   t->Branch("mNtrkoffline", &mNtrkoffline, "mNtrkoffline/I");
   t->Branch("mNpixelTracks", &mNpixelTracks, "mNpixelTracks/I");
@@ -180,22 +202,30 @@ void EvtTowerInfoNTuple::branches()
 
 void EvtTowerInfoNTuple::calculate()
 {
-  mRunNb = run;
-  mLSNb = lumi;
-  mEventNb = evt;
-  mCenBin = hiBin;
-  mVx = vx;
-  mVy = vy;
-  mVz = vz;
-  mZDCPlus = hiZDCplus;
-  mZDCMinus = hiZDCminus;
-  mNpixel = hiNpix;
-  mNtrkoffline = hiNtracks;
-  mNpixelTracks = hiNpixelTracks;
+  if(mHiEvtTree)
+    {
+      mRunNb = run;
+      mLSNb = lumi;
+      mEventNb = evt;
+      mCenBin = hiBin;
+      // mCenBin = getHiBinFromhiHF(hiHF);
+      mVx = vx;
+      mVy = vy;
+      mVz = vz;
+      mZDCPlus = hiZDCplus;
+      mZDCMinus = hiZDCminus;
+      mNpixel = hiNpix;
+      mNtrkoffline = hiNtracks;
+      mNpixelTracks = hiNpixelTracks;
+    }
+  else if(mAdcTree)
+    mCenBin = getHiBinFromhiHF(hft);
 
-  // std::cout<<" "<<m_MaxL1HFAdcPlus<<std::endl;
-  mMaxL1HFAdcPlus = m_MaxL1HFAdcPlus;
-  mMaxL1HFAdcMinus = m_MaxL1HFAdcMinus;
+  if(mAdcTree)
+    {
+      mMaxL1HFAdcPlus = m_MaxL1HFAdcPlus;
+      mMaxL1HFAdcMinus = m_MaxL1HFAdcMinus;
+    }
 
   for(int i=0; i<nMaxTrigHLTBits; i++)
     mTrigHLT[i] = true;
@@ -204,11 +234,15 @@ void EvtTowerInfoNTuple::calculate()
     mEvtSel[i] = true;
   if(mSkimTree)
     {
-      mEvtSel[0] = (bool)(pclusterCompatibilityFilter && pprimaryVertexFilter && pphfCoincFilter2Th4);
       mEvtSel[1] = (bool)pphfCoincFilter2Th4;
       mEvtSel[2] = (bool)pprimaryVertexFilter;
       mEvtSel[3] = (bool)pclusterCompatibilityFilter;
     }
+  else if(mAdcTree)
+    {
+      mEvtSel[1] = nhfp > 1 && nhfn > 1;
+    }
+  mEvtSel[0] = mEvtSel[1] && mEvtSel[2] && mEvtSel[3];
 
   // ZDC rechit
   mZDCRechitPlus = 0;
