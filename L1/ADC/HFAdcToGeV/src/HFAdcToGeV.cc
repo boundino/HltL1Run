@@ -127,9 +127,8 @@ HFAdcToGeV::HFAdcToGeV(const edm::ParameterSet& iConfig) :
   minimized_ = iConfig.getUntrackedParameter<bool>("minimized", false);
   fillhf_ = iConfig.getParameter<bool>("fillhf");
   const edm::InputTag towerMaker("towerMaker");
-  if (fillhf_) {
+  if (fillhf_)
     towers_ = consumes<CaloTowerCollection>(iConfig.getUntrackedParameter<edm::InputTag>("tower_tag", towerMaker));
-  }
 }
 
 
@@ -277,10 +276,10 @@ void HFAdcToGeV::fill_hf(const edm::Event& iEvent) {
     if (cal.ietaAbs() < 30) { continue; }
 
     if (cal.zside() > 0) {
-      if (cal.energy() > 3.) { nhfp++; }
+      if (cal.energy() > 4.) { nhfp++; }
       hftp += cal.pt();
     } else {
-      if (cal.energy() > 3.) { nhfn++; }
+      if (cal.energy() > 4.) { nhfn++; }
       hftm += cal.pt();
     }
   }
@@ -318,14 +317,14 @@ HFAdcToGeV::beginJob()
       root->Branch("ampl", &ampl_);
     }
 
-  // if(fillhf_)
-  //   {
+  if(fillhf_)
+    {
       root->Branch("nhfp", &nhfp_);
       root->Branch("nhfn", &nhfn_);
       root->Branch("hft", &hft_);
       root->Branch("hftp", &hftp_);
       root->Branch("hftm", &hftm_);
-    // }
+    }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
