@@ -6,7 +6,7 @@
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/EDAnalyzer.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
 
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/EventSetup.h"
@@ -41,7 +41,7 @@
 // class declaration
 //
 
-class HFAdcToGeV : public edm::EDAnalyzer {
+class HFAdcToGeV : public edm::one::EDAnalyzer</*edm::one::WatchRuns, edm::one::WatchLuminosityBlocks*/> {
 public:
   explicit HFAdcToGeV(const edm::ParameterSet&);
   ~HFAdcToGeV();
@@ -81,14 +81,14 @@ private:
   edm::Service<TFileService> fs;
   TTree *root;
   
-  virtual void beginJob() override;
-  virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-  virtual void endJob() override;
+   void beginJob() override;
+   void analyze(const edm::Event&, const edm::EventSetup&) override;
+   void endJob() override;
   
-  virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
-  //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
-  //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
-  //virtual void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+  // void beginRun(const edm::Run& run, const edm::EventSetup& iSetup) override;
+  // void endRun(const edm::Run& run, const edm::EventSetup& iSetup) override;
+  // void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
+  // void endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
 
   // ----------member data ---------------------------
 
@@ -294,8 +294,7 @@ void HFAdcToGeV::fill_hf(const edm::Event& iEvent) {
 
 // ------------ method called once each job just before starting event loop  ------------
 
-void 
-HFAdcToGeV::beginJob()
+void HFAdcToGeV::beginJob()
 {
   root = fs->make<TTree>("adc","adc");
 
@@ -328,52 +327,22 @@ HFAdcToGeV::beginJob()
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-HFAdcToGeV::endJob() 
-{
-}
+void HFAdcToGeV::endJob() {}
 
 // ------------ method called when starting to processes a run  ------------
-
-void 
-HFAdcToGeV::beginRun(edm::Run const& iRun, edm::EventSetup const& iSetup)
-{
-  /*
-    bool useL1EventSetup = true;
-    bool useL1GtTriggerMenuLite = false;
-  
-    // could be added in beginRun(...) - if not added, the caching will be done in analyze/produce/filter method
-    m_l1GtUtils.getL1GtRunCache(iRun, iSetup, useL1EventSetup, useL1GtTriggerMenuLite);
-  */
-}
+// void HFAdcToGeV::beginRun(const edm::Run& run, const edm::EventSetup& iSetup) {}
 
 // ------------ method called when ending the processing of a run  ------------
-/*
-  void 
-  HFAdcToGeV::endRun(edm::Run const&, edm::EventSetup const&)
-  {
-  }
-*/
+// void HFAdcToGeV::endRun(const edm::Run& run, const edm::EventSetup& iSetup) {}
 
 // ------------ method called when starting to processes a luminosity block  ------------
-/*
-  void 
-  HFAdcToGeV::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-  {
-  }
-*/
+// void HFAdcToGeV::beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) {}
 
 // ------------ method called when ending the processing of a luminosity block  ------------
-/*
-  void 
-  HFAdcToGeV::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&)
-  {
-  }
-*/
+// void HFAdcToGeV::endLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) {}
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void
-HFAdcToGeV::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void HFAdcToGeV::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
   edm::ParameterSetDescription desc;
