@@ -47,14 +47,14 @@ int macro(std::string input, int istart, int iend) {
 
     xjjroot::setgstyle();
   xjjroot::mypdf pdf("figspdf/zdc/zdcdigi.pdf", "c", 1200, 1200);
-  std::cout<<t->GetEntries()<<std::endl; 
+  // std::cout<<t->GetEntries()<<std::endl; 
   int nentries = t->GetEntries();
   if (istart >= nentries) return 2;
   for (int i = istart; i < std::min(iend, nentries); i++) {
     t->GetEntry(i);
     te->GetEntry(i);
 
-    if (i > istart+4 && adcTs1[15] < 150 && adcTs7[15] < 150) continue;
+    // if (i > istart+4 && adcTs1[15] < 150 && adcTs7[15] < 150) continue;
 
 #define MAKE_HIST(p)                                                    \
     std::vector<TH1F*> h##p = std::vector<TH1F*>(4);                    \
