@@ -22,7 +22,7 @@ int macro(std::string param)
   l1trigger::evtl1ntuple* nt = new l1trigger::evtl1ntuple(tt);
 
   // hist
-  TH1F* hcent = new TH1F("hcent", ";Centrality;Entries", l1trigger::nbincent, 0, 100);
+  TH1F* hcent = new TH1F("hcent", ";Centrality [%];Entries", l1trigger::nbincent, 0, 100);
   std::vector<TH1F*> hZDCdis(l1trigger::nDirs, 0), hZDCdisGeV(l1trigger::nDirs, 0), heffden(l1trigger::ncent, 0), 
     hrate_And_ZDCAnd(l1trigger::nNeus, 0), hrate_And_ZDCAnd_pix(l1trigger::nNeus, 0),
     hrate_And_ZDCOr(l1trigger::nNeus, 0), hrate_And_ZDCOr_pix(l1trigger::nNeus, 0);
@@ -53,8 +53,8 @@ int macro(std::string param)
         }
       for(int a=0; a<l1trigger::nadc; a++)
         {
-          heffcent_And_ZDCAnd[k][a] = new TH1F(Form("heffcent_And_ZDCAnd_%dn_%d", k, a), ";Centrality;", l1trigger::nbincent, 0, 100);
-          heffcent_And_ZDCOr[k][a] = new TH1F(Form("heffcent_And_ZDCOr_%dn_%d", k, a), ";Centrality;", l1trigger::nbincent, 0, 100);
+          heffcent_And_ZDCAnd[k][a] = new TH1F(Form("heffcent_And_ZDCAnd_%dn_%d", k, a), ";Centrality [%];", l1trigger::nbincent, 0, 100);
+          heffcent_And_ZDCOr[k][a] = new TH1F(Form("heffcent_And_ZDCOr_%dn_%d", k, a), ";Centrality [%];", l1trigger::nbincent, 0, 100);
         }
     }
   for(int l=0; l<l1trigger::ncent; l++)

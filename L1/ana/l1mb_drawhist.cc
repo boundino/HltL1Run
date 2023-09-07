@@ -31,7 +31,7 @@ template<class T>
 void drawshadow(T* hempty, Color_t cc = kGray)
 {
   hempty->Draw("AXIS");
-  xjjroot::drawCMS("Internal", tag_.c_str());
+  xjjroot::drawCMS("Preliminary", tag_.c_str());
   xjjroot::drawtex(0, 0.01, subtag_.c_str(), 0.035, 11, 52, kGray+1);
   if(cc > 0)
     {
@@ -226,13 +226,13 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     leg_And_HFOnly->AddEntry(gr_heff_AND_HFOnly[l], Form("Cent. %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), "p");
 
-  auto hempty = new TH2F("hempty", ";L1 Rate [kHz];Efficiency", 10, 10, 10000, 10, 0, 1.35);
+  auto hempty = new TH2F("hempty", ";L1 Rate [kHz];Efficiency", 10, 10, 40, 10, 0, 1.35);
   xjjroot::sethempty(hempty);
   auto hemptyeff = new TH2F("hemptyeff", ";L1 Rate [kHz];#frac{Efficiency (w/ Ntrk > 0)}{Efficiency (w/o Ntrk > 0)}", 10, 10, 40, 10, 0, 1.35);
   xjjroot::sethempty(hemptyeff);
   auto hemptyrate = new TH2F("hemptyrate", ";L1 Rate [kHz];HLT Rate (w/ Ntrk > 0) [kHz]", 10, 10, 40, 10, 10, 20);
   xjjroot::sethempty(hemptyrate);
-  auto hemptyeffcent = new TH2F("hemptyeffcent", ";Centrality;Efficiency", 10, 0, 100, 10, 0, 1.35);
+  auto hemptyeffcent = new TH2F("hemptyeffcent", ";Centrality [%];Efficiency", 10, 0, 100, 10, 0, 1.35);
   xjjroot::sethempty(hemptyeffcent);
   auto hemptyeffadc = new TH2F("hemptyeffadc", ";HF Threshold [ADC];Efficiency", 10, 0, l1trigger::nadc, 10, 0, 1.35);
   xjjroot::sethempty(hemptyeffadc);
@@ -253,7 +253,7 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     {
       pdf->prepare();
-      pdf->getc()->SetLogx();
+      // pdf->getc()->SetLogx();
       drawshadow(hempty);
 
       for(int k=0; k<l1trigger::nNeus; k++)
@@ -269,7 +269,7 @@ int macro(std::string param)
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->getc()->RedrawAxis();
       pdf->write(); 
-      pdf->getc()->SetLogx(0);
+      // pdf->getc()->SetLogx(0);
    }
 
   // HFcent_And
@@ -411,14 +411,14 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     {
       pdf->prepare();
-      pdf->getc()->SetLogx();
+      // pdf->getc()->SetLogx();
       drawshadow(hempty);
       drawgrval(groc_And_ZDCAnd[0][l], hempty);
       drawgrval(groc_And_ZDCOr[2][l], hempty);
       leg_ind1->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->write();
-      pdf->getc()->SetLogx(0);
+      // pdf->getc()->SetLogx(0);
     }
 
   // >>
@@ -433,7 +433,7 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     {
       pdf->prepare(); 
-      pdf->getc()->SetLogx();
+      // pdf->getc()->SetLogx();
       drawshadow(hempty);
       drawgrval(groc_And_ZDCAnd[0][l], hempty);
       drawgrval(groc_And_ZDCAnd_pix[0][l], hempty);
@@ -442,7 +442,7 @@ int macro(std::string param)
       leg_ind->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->write();
-      pdf->getc()->SetLogx(0);
+      // pdf->getc()->SetLogx(0);
     }
 
   // >>

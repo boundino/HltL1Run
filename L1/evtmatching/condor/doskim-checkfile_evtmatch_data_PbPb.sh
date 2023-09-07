@@ -17,7 +17,7 @@ runjobs=${2:-0}
 
 
 INPUTS=(
-    "/mnt/T2_US_MIT/hadoop/cms/store/user/wangj/HIForward/crab_forest_20220512_HIForward_HIRun2018A_HIZeroBiasv1_run327327/220512_232708/0000/,root://cms-xrd-global.cern.ch//store/user/jwang/L1Run2022/crab_l1Ntuple_20220428_HIForward_HIRun2018A_shuaiySkimedZB_run327327.root"
+    "/mnt/T2_US_MIT/hadoop/cms/store/user/wangj/HIForward/crab_forest_20220512_HIForward_HIRun2018A_HIZeroBiasv1_run327327/220512_232708/0000/,root://cms-xrd-global.cern.ch//store/user/jwang/L1Run2022/crab_l1Ntuple_20220428_HIForward_HIRun2018A_shuaiySkimedZB_run327327.root" # /afs/cern.ch/work/w/wangj/hltl1/HltL1Run2022/forest/CMSSW_12_2_1/src
 )
 
 WORKDIR="/work/submit/$USER/l1evtmatch/"
