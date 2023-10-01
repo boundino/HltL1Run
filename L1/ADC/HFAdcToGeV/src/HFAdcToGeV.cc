@@ -68,6 +68,9 @@ public:
   std::vector<int> ampl_;
   int mMaxL1HFAdcPlus_;
   int mMaxL1HFAdcMinus_;
+  int mMaxietaPlus_, mMaxietaMinus_;
+  int mMaxiphiPlus_, mMaxiphiMinus_;
+  int mMaxdepthPlus_, mMaxdepthMinus_;
 
   // hf information
   int nhfp_;
@@ -81,9 +84,9 @@ private:
   edm::Service<TFileService> fs;
   TTree *root;
   
-   void beginJob() override;
-   void analyze(const edm::Event&, const edm::EventSetup&) override;
-   void endJob() override;
+  void beginJob() override;
+  void analyze(const edm::Event&, const edm::EventSetup&) override;
+  void endJob() override;
   
   // void beginRun(const edm::Run& run, const edm::EventSetup& iSetup) override;
   // void endRun(const edm::Run& run, const edm::EventSetup& iSetup) override;
@@ -120,7 +123,7 @@ private:
 HFAdcToGeV::HFAdcToGeV(const edm::ParameterSet& iConfig) :
   tok_conditions_(esConsumes<HcalDbService, HcalDbRecord>()),
   tok_hcaldd_(esConsumes<HcalDDDRecConstants, HcalRecNumberingRecord>())
-// m_l1GtUtils(iConfig, consumesCollector(), true)//this is important for 80x to compile
+  // m_l1GtUtils(iConfig, consumesCollector(), true)//this is important for 80x to compile
 {
   const edm::InputTag hcalDigis("hcalDigis");
   tok_hfQIE10_ = consumes<QIE10DigiCollection>(iConfig.getUntrackedParameter<edm::InputTag>("digiLabel", hcalDigis));
@@ -186,6 +189,12 @@ void HFAdcToGeV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     {
       mMaxL1HFAdcPlus_ = -1;
       mMaxL1HFAdcMinus_ = -1;
+      mMaxietaPlus_ = -1;
+      mMaxietaMinus_ = -1;
+      mMaxiphiPlus_ = -1;
+      mMaxiphiMinus_ = -1;
+      mMaxdepthPlus_ = -1;
+      mMaxdepthMinus_ = -1;
       for ( auto& it : *digi ) // QIE10DigiCollection::const_iterator
         {
           const QIE10DataFrame& frame(it);
@@ -234,11 +243,22 @@ void HFAdcToGeV::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
               ampl += adc;
             }
 
-          if(ieta > 0)
-            mMaxL1HFAdcPlus_ = std::max(ampl, mMaxL1HFAdcPlus_);
-          else
-            mMaxL1HFAdcMinus_ = std::max(ampl, mMaxL1HFAdcMinus_);
-
+          if(ieta > 0) {
+            if (ampl > mMaxL1HFAdcPlus_) {
+              mMaxL1HFAdcPlus_ = ampl;
+              mMaxietaPlus_ = ieta;
+              mMaxiphiPlus_ = iphi;
+              mMaxdepthPlus_ = depth;
+            }
+          }
+          else {
+            if (ampl > mMaxL1HFAdcMinus_) {
+              mMaxL1HFAdcMinus_ = ampl;
+              mMaxietaMinus_ = ieta;
+              mMaxiphiMinus_ = iphi;
+              mMaxdepthMinus_ = depth;
+            }
+          }
           if(!minimized_)
             {
               ieta_.push_back(ieta);
@@ -299,7 +319,13 @@ void HFAdcToGeV::beginJob()
   root = fs->make<TTree>("adc","adc");
 
   root->Branch("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus_, "mMaxL1HFAdcPlus/I");
+  root->Branch("mMaxietaPlus", &mMaxietaPlus_, "mMaxietaPlus/I");
+  root->Branch("mMaxiphiPlus", &mMaxiphiPlus_, "mMaxiphiPlus/I");
+  root->Branch("mMaxdepthPlus", &mMaxdepthPlus_, "mMaxdepthPlus/I");
   root->Branch("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus_, "mMaxL1HFAdcMinus/I");
+  root->Branch("mMaxietaMinus", &mMaxietaMinus_, "mMaxietaMinus/I");
+  root->Branch("mMaxiphiMinus", &mMaxiphiMinus_, "mMaxiphiMinus/I");
+  root->Branch("mMaxdepthMinus", &mMaxdepthMinus_, "mMaxdepthMinus/I");
 
   if(!minimized_)
     {

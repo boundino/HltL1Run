@@ -8,7 +8,8 @@ inputs=(
     # configs/run327327.conf
     # configs/mcHydjetDrum5F122X.conf
     # configs/run359343.conf
-    configs/run362271.conf
+    # configs/run362271.conf
+    configs/run373870.conf
 )
 
 for ii in ${inputs[@]}
