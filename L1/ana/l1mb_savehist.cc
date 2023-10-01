@@ -13,7 +13,8 @@ int macro(std::string param)
 {
   xjjc::config conf(param);
   conf.print();
-  float ZBrate = conf.vf("ZBrate");
+  float ZBrate = conf.vf("ZBrate"),
+    nBunchRatio = conf.vf("nBunchRatio");
   std::string inputname = conf["Input"], outputdir = conf["Output"];
   l1trigger::setcent(conf);
 
@@ -65,7 +66,7 @@ int macro(std::string param)
   int nZB_HLT = 0;
   for(int i=0; i<nentries; i++)
     {
-      xjjc::progressbar(i, nentries, 100000);
+      xjjc::progressslide(i, nentries, 100000);
       nt->GetEntry(i);
 
       // select ZB events      
@@ -127,16 +128,16 @@ int macro(std::string param)
   xjjc::progressbar_summary(nentries);
 
   TH1F* hrateZB = new TH1F("hrateZB", ";L1 HF threshold (ADC);", 1, 0, 1);
-  hrateZB->SetBinContent(1, ZBrate);
+  hrateZB->SetBinContent(1, ZBrate*nBunchRatio);
   for(int k=0; k<l1trigger::nNeus; k++)
     {
       hrate_And_ZDCAnd_frac[k] = (TH1F*)hrate_And_ZDCAnd[k]->Clone(Form("hrate_And_ZDCAnd_frac_%dn", k));
       hrate_And_ZDCOr_frac[k] = (TH1F*)hrate_And_ZDCOr[k]->Clone(Form("hrate_And_ZDCOr_frac_%dn", k));
     }
-  for(auto& h : hrate_And_ZDCAnd) h->Scale(ZBrate/nZB_HLT/1.e+3);
-  for(auto& h : hrate_And_ZDCAnd_pix) h->Scale(ZBrate/nZB_HLT/1.e+3);
-  for(auto& h : hrate_And_ZDCOr) h->Scale(ZBrate/nZB_HLT/1.e+3);
-  for(auto& h : hrate_And_ZDCOr_pix) h->Scale(ZBrate/nZB_HLT/1.e+3);
+  for(auto& h : hrate_And_ZDCAnd) h->Scale(ZBrate*nBunchRatio/nZB_HLT/1.e+3);
+  for(auto& h : hrate_And_ZDCAnd_pix) h->Scale(ZBrate*nBunchRatio/nZB_HLT/1.e+3);
+  for(auto& h : hrate_And_ZDCOr) h->Scale(ZBrate*nBunchRatio/nZB_HLT/1.e+3);
+  for(auto& h : hrate_And_ZDCOr_pix) h->Scale(ZBrate*nBunchRatio/nZB_HLT/1.e+3);
   for(auto& h : hrate_And_ZDCAnd_frac) h->Scale(1./nZB_HLT);
   for(auto& h : hrate_And_ZDCOr_frac) h->Scale(1./nZB_HLT);
   for(int k=0; k<l1trigger::nNeus; k++)

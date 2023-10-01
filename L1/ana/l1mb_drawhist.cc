@@ -28,7 +28,7 @@ float ZBrate;
 int printrate(TH1F* h);
 
 template<class T>
-void drawshadow(T* hempty, Color_t cc = kGray)
+void drawshadow(T* hempty, Color_t cc = kGray, float guide = 20)
 {
   hempty->Draw("AXIS");
   xjjroot::drawCMS("Preliminary", tag_.c_str());
@@ -38,8 +38,8 @@ void drawshadow(T* hempty, Color_t cc = kGray)
       float prescls[] = {1, 1.5};
       for(auto& pp : prescls)
         {
-          xjjroot::drawline(pp*25, hempty->GetYaxis()->GetXmin(), pp*25, hempty->GetYaxis()->GetXmax()<2?1:hempty->GetYaxis()->GetXmax(), cc, 5, 2);
-          xjjroot::drawtexnum(pp*25-0.5, hempty->GetYaxis()->GetXmin() + (hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20., 
+          xjjroot::drawline(pp*guide, hempty->GetYaxis()->GetXmin(), pp*guide, hempty->GetYaxis()->GetXmax()<2?1:hempty->GetYaxis()->GetXmax(), cc, 5, 2);
+          xjjroot::drawtexnum(pp*guide-0.5, hempty->GetYaxis()->GetXmin() + (hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20., 
                               Form("Prescl = %s", xjjc::number_remove_zero(pp).c_str()), 0.032, 32, 62, cc);
         }
     }
@@ -77,7 +77,7 @@ int nearest(TH1F* h, float frate)
       dev = delta;
       iresult = i;
     }
-  std::cout<<__FUNCTION__<<": \e[1m"<<frate<<"kHz\e[0m: \e[1m("<<h->GetName()<<")\e[0m => \e[1m"<<Form("%.2f kHz", h->GetBinContent(iresult+1))<<" (ADC >= "<<iresult<<")\e[0m"<<std::endl;
+  std::cout<<__FUNCTION__<<": \e[1m"<<frate<<"kHz\e[0m: \e[1m("<<h->GetName()<<")\e[0m => \e[1m"<<Form("%.2f kHz", h->GetBinContent(iresult+1))<<" (ADC > "<<iresult<<")\e[0m"<<std::endl;
   return iresult;
 }
 
@@ -88,6 +88,7 @@ int macro(std::string param)
   std::string outputdir = conf["Output"];
   tag_ = conf["Tag"]; subtag_ = conf["SubTag"];
   l1trigger::setcent(conf);
+  float frate = 20;
 
   TFile* inf = TFile::Open(Form("rootfiles/%s/savehist.root", outputdir.c_str()));
 
@@ -226,11 +227,11 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     leg_And_HFOnly->AddEntry(gr_heff_AND_HFOnly[l], Form("Cent. %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), "p");
 
-  auto hempty = new TH2F("hempty", ";L1 Rate [kHz];Efficiency", 10, 10, 40, 10, 0, 1.35);
+  auto hempty = new TH2F("hempty", ";L1 Rate [kHz];Efficiency", 10, 10, 50, 10, 0, 1.35);
   xjjroot::sethempty(hempty);
-  auto hemptyeff = new TH2F("hemptyeff", ";L1 Rate [kHz];#frac{Efficiency (w/ Ntrk > 0)}{Efficiency (w/o Ntrk > 0)}", 10, 10, 40, 10, 0, 1.35);
+  auto hemptyeff = new TH2F("hemptyeff", ";L1 Rate [kHz];#frac{Efficiency (w/ Ntrk > 0)}{Efficiency (w/o Ntrk > 0)}", 10, 10, 50, 10, 0, 1.35);
   xjjroot::sethempty(hemptyeff);
-  auto hemptyrate = new TH2F("hemptyrate", ";L1 Rate [kHz];HLT Rate (w/ Ntrk > 0) [kHz]", 10, 10, 40, 10, 10, 20);
+  auto hemptyrate = new TH2F("hemptyrate", ";L1 Rate [kHz];HLT Rate (w/ Ntrk > 0) [kHz]", 10, 10, 50, 10, 10, 20);
   xjjroot::sethempty(hemptyrate);
   auto hemptyeffcent = new TH2F("hemptyeffcent", ";Centrality [%];Efficiency", 10, 0, 100, 10, 0, 1.35);
   xjjroot::sethempty(hemptyeffcent);
@@ -239,7 +240,7 @@ int macro(std::string param)
 
   xjjroot::setgstyle(1);
   gStyle->SetPadRightMargin(xjjroot::margin_pad_right*2);
-  xjjroot::mypdf* pdf = new xjjroot::mypdf("plots/" + outputdir + "/per.pdf", "c", 700, 600);
+  xjjroot::mypdf* pdf = new xjjroot::mypdf("figspdf/" + outputdir + "/per.pdf", "c", 700, 600);
 
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
@@ -247,7 +248,7 @@ int macro(std::string param)
     gr_heff_AND_HFOnly[l]->Draw("plX same");
   leg_And_HFOnly->Draw();
   pdf->getc()->RedrawAxis();
-  pdf->write();
+  pdf->write("figs/" + outputdir + "/per-eff-cent.pdf");
 
   // HF_And_ZDCAnd/Or ROC
   for(int l=0; l<l1trigger::ncent; l++)
@@ -268,9 +269,9 @@ int macro(std::string param)
       t_And_ZDCOr->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->getc()->RedrawAxis();
-      pdf->write(); 
+      pdf->write(Form("figs/%s/per-eff-rate-%d-%d.pdf", outputdir.c_str(), l1trigger::cent[l]/2, l1trigger::cent[l+1]/2));
       // pdf->getc()->SetLogx(0);
-   }
+    }
 
   // HFcent_And
   auto leg_And_cent = new TLegend(0.30, 0.40, 0.70, 0.55);
@@ -290,26 +291,27 @@ int macro(std::string param)
   leg_And_cent->Draw();
   // xjjroot::drawtex(0.88, 0.30, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
   pdf->getc()->RedrawAxis();
-  pdf->write();
+  pdf->write(Form("figs/%s/per-eff-cent.pdf", outputdir.c_str()));
 
   // HFcent_And_ZDCAnd/Or
-  pdf->prepare();
-  float frate = 25;
-  drawshadow(hemptyeffcent, 0);
-  for(int k=0; k<l1trigger::nNeus; k++)
-    {
-      int aAnd = nearest(hrate_And_ZDCAnd[k], frate),
-        aOr = nearest(hrate_And_ZDCOr[k], frate);
-      geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
-      geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
-    }
-  leg_And_ZDCAnd->Draw();
-  leg_And_ZDCOr->Draw();
-  t_And_ZDCAnd->Draw();
-  t_And_ZDCOr->Draw();
-  xjjroot::drawtex(0.88, 0.30, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
-  pdf->getc()->RedrawAxis();
-  pdf->write();
+  for (float prescale : {1.5, 2.0, 2.5}) {
+    pdf->prepare();
+    drawshadow(hemptyeffcent, 0);
+    for(int k=0; k<l1trigger::nNeus; k++)
+      {
+        int aAnd = nearest(hrate_And_ZDCAnd[k], frate*prescale),
+          aOr = nearest(hrate_And_ZDCOr[k], frate*prescale);
+        geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
+        geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
+      }
+    leg_And_ZDCAnd->Draw();
+    leg_And_ZDCOr->Draw();
+    t_And_ZDCAnd->Draw();
+    t_And_ZDCOr->Draw();
+    xjjroot::drawtex(0.88, 0.30, Form("L1 MB rate #approx %.0f kHz (Presl %.1f)", frate*prescale, prescale), 0.04, 32);
+    pdf->getc()->RedrawAxis();
+    pdf->write(Form("figs/%s/per-eff-cent-prescl%.1f.pdf", outputdir.c_str(), prescale));
+  }
 
   // HF_And_ZDCAnd_pix/Or_pix Ntrk efficiency
   for(int l=0; l<l1trigger::ncent; l++)
@@ -396,29 +398,28 @@ int macro(std::string param)
   leg_ind1->AddEntry(groc_And_ZDCOr[2][0], "HF + ZDC_OR (2n)", "pl");
 
   // >>
-  // float frate = 20;
-  int a0 = nearest(hrate_And_ZDCAnd[0], frate),
-    a2 = nearest(hrate_And_ZDCOr[2], frate);
-  pdf->prepare();
-  drawshadow(hemptyeffcent, 0);
-  drawgrval(geffcent_And_ZDCAnd[0][a0], hemptyeffcent, false);
-  drawgrval(geffcent_And_ZDCOr[2][a2], hemptyeffcent, false);
-  xjjroot::drawtex(0.88, 0.30, Form("L1 MB rate #approx %.0f kHz", frate), 0.04, 32);
-  leg_ind1->Draw();
-  pdf->write();
+  for (float prescale : {1.5, 2.0, 2.5}) {
+    int a0 = nearest(hrate_And_ZDCAnd[0], frate*prescale),
+      a2 = nearest(hrate_And_ZDCOr[2], frate*prescale);
+    pdf->prepare();
+    drawshadow(hemptyeffcent, 0);
+    drawgrval(geffcent_And_ZDCAnd[0][a0], hemptyeffcent, false);
+    drawgrval(geffcent_And_ZDCOr[2][a2], hemptyeffcent, false);
+    xjjroot::drawtex(0.88, 0.30, Form("L1 MB rate #approx %.0f kHz (Presl %.1f)", frate*prescale, prescale), 0.04, 32);
+    leg_ind1->Draw();
+    pdf->write(Form("figs/%s/per-eff-cent-prescl%.1f-clean.pdf", outputdir.c_str(), prescale));
+  }
 
   // >>
   for(int l=0; l<l1trigger::ncent; l++)
     {
       pdf->prepare();
-      // pdf->getc()->SetLogx();
       drawshadow(hempty);
       drawgrval(groc_And_ZDCAnd[0][l], hempty);
       drawgrval(groc_And_ZDCOr[2][l], hempty);
       leg_ind1->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
-      pdf->write();
-      // pdf->getc()->SetLogx(0);
+      pdf->write(Form("figs/%s/per-eff-rate-%d-%d-clean.pdf", outputdir.c_str(), l1trigger::cent[l]/2, l1trigger::cent[l+1]/2));
     }
 
   // >>
@@ -433,7 +434,6 @@ int macro(std::string param)
   for(int l=0; l<l1trigger::ncent; l++)
     {
       pdf->prepare(); 
-      // pdf->getc()->SetLogx();
       drawshadow(hempty);
       drawgrval(groc_And_ZDCAnd[0][l], hempty);
       drawgrval(groc_And_ZDCAnd_pix[0][l], hempty);
@@ -442,7 +442,6 @@ int macro(std::string param)
       leg_ind->Draw();
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.04, 32);
       pdf->write();
-      // pdf->getc()->SetLogx(0);
     }
 
   // >>
@@ -470,7 +469,7 @@ int macro(std::string param)
 
   pdf->close();
 
-  printrate(hrate_And_ZDCAnd_frac[0]);
+  printrate(hrate_And_ZDCAnd[0]);
 
   return 0;
 }
