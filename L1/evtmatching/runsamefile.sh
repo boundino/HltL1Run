@@ -8,7 +8,8 @@ forests=(
     # /eos/cms/store/group/phys_heavyions/wangj/Forest2023/CRAB_UserFiles/crab_forestadc_231005_PhysicsHIPhysicsRawPrime0-8_374778_ZB.root
     # /eos/cms/store/group/phys_heavyions/wangj/Forest2023/CRAB_UserFiles/crab_forestadc_231003_PhysicsHIForward0_374596_fixZDC.root
     # /eos/cms/store/group/phys_heavyions/wangj/L1PbPb2022/crab_adcRAW_221124_HITestRaw0_HIRun2022A_ZBPVfil_362294-6.root
-    /afs/cern.ch/work/w/wangj/RECO2023/forest/CMSSW_13_2_5_patch1/src/crab_forestadc.root
+    # /afs/cern.ch/work/w/wangj/hltl1/runl12023/CMSSW_13_2_5_patch1/src/crab_forestadc.root
+    /eos/cms/store/group/phys_heavyions/wangj/Forest2023/CRAB_UserFiles/crab_forestadc_241024_PhysicsHIPhysicsRawPrime0_375549_ZB.root
 )
 
 make evtmatch_samefile || exit 1

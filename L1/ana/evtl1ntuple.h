@@ -21,6 +21,8 @@ namespace l1trigger
     Float_t         mZDCMinus;
     Float_t         mZDCRechitPlus;
     Float_t         mZDCRechitMinus;
+    Float_t         mZDCDigiPlus;
+    Float_t         mZDCDigiMinus;
     Int_t           mHFnhfp;
     Int_t           mHFnhfn;
     Int_t           mMaxL1HFAdcPlus;
@@ -29,8 +31,11 @@ namespace l1trigger
     Int_t           mNtrkoffline;
     Bool_t          mTrigHLT[12];
     Bool_t          mEvtSel[18];
+    int  mMBindex;
 
     //
+    Float_t  ZDCplus;
+    Float_t  ZDCminus;
     Bool_t  ZB_HLTBit;
     Bool_t  colEvtSel;
     Bool_t  hfCoincFilter2Th4;
@@ -58,6 +63,12 @@ void l1trigger::evtl1ntuple::morecalculation()
   primaryVertexFilter        = mEvtSel[2];
   clusterCompatibilityFilter = mEvtSel[3];
 
+  ZDCplus = mZDCDigiPlus;
+  ZDCminus = mZDCDigiMinus;
+
+  // ZDCplus = mZDCRechitPlus;
+  // ZDCminus = mZDCRechitMinus;
+
   AdcAND = std::min(mMaxL1HFAdcPlus, mMaxL1HFAdcMinus);
   AdcOR = std::max(mMaxL1HFAdcPlus, mMaxL1HFAdcMinus);
 }
@@ -73,6 +84,8 @@ void l1trigger::evtl1ntuple::setbranchaddress()
   fnt->SetBranchAddress("mZDCMinus", &mZDCMinus);
   fnt->SetBranchAddress("mZDCRechitPlus", &mZDCRechitPlus);
   fnt->SetBranchAddress("mZDCRechitMinus", &mZDCRechitMinus);
+  fnt->SetBranchAddress("mZDCDigiPlus", &mZDCDigiPlus);
+  fnt->SetBranchAddress("mZDCDigiMinus", &mZDCDigiMinus);
   fnt->SetBranchAddress("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus);
   fnt->SetBranchAddress("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus);
   fnt->SetBranchAddress("mNpixel", &mNpixel);
