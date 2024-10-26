@@ -5,10 +5,6 @@ comp="$(root-config --libs --cflags) -I$HOME"
 [[ $# == 0 || ${2:-0} -eq 1 ]] && { g++ drawadcToGeV.C $comp -g -o drawadcToGeV.exe || exit 1 ; }
 
 inputs=(
-    # configs/run327327.conf
-    # configs/mcHydjetDrum5F122X.conf
-    # configs/run359343.conf
-    # configs/run362271.conf
     configs/run373870.conf
 )
 
