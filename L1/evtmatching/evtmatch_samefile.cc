@@ -15,9 +15,10 @@ int evtmatching(std::string inf, std::string outfile, int nentries = -1)
 
   TTree* hiroot = (TTree*)inff->Get("hiEvtAnalyzer/HiTree");
   TTree* skimroot = (TTree*)inff->Get("skimanalysis/HltTree");
-  TTree* zdcdigiroot = (TTree*)inff->Get("zdcanalyzer/zdcdigi");
-  // TTree* zdcrechitroot = (TTree*)inff->Get("zdcanalyzer/zdcrechit");
-  TTree* zdcrechitroot = 0;
+  // TTree* zdcdigiroot = (TTree*)inff->Get("zdcanalyzer/zdcdigi");
+  TTree* zdcdigiroot = 0;
+  TTree* zdcrechitroot = (TTree*)inff->Get("zdcanalyzer/zdcrechit");
+  // TTree* zdcrechitroot = 0;
   TTree* hltroot = (TTree*)inff->Get("hltanalysis/HltTree");
   TTree* l1ADC = (TTree*)inff->Get("HFAdcana/adc");
 

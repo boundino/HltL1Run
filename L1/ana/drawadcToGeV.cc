@@ -66,7 +66,7 @@ void drawadcToGeV(std::string param)
 
   xjjroot::setgstyle(1);
   gStyle->SetLineWidth(2);
-  xjjroot::mypdf* pdf = new xjjroot::mypdf("plots/" + outputdir + "/adcToGeV.pdf", "c", 700, 600);
+  xjjroot::mypdf* pdf = new xjjroot::mypdf("figspdf/" + outputdir + "/adcToGeV.pdf", "c", 700, 600);
 
   for ( auto& i : vhist )
     {
@@ -79,7 +79,7 @@ void drawadcToGeV(std::string param)
 
       pdf->prepare();
       // c->SetLogz();
-      i->Draw("");
+      i->Draw("scat=0.5");
       p->Draw("le same");
       if(nline==2) 
         { 
@@ -89,7 +89,7 @@ void drawadcToGeV(std::string param)
           // xjjroot::drawline(17, 0, 17, 20, kOrange+6, 3, 3);
           // xjjroot::drawline(0, p->GetBinContent(15+1), 15,  p->GetBinContent(15+1), kOrange+6, 3, 3);
         }
-      xjjroot::drawCMS("Internal", tag.c_str());
+      xjjroot::drawCMS(xjjroot::CMS::internal, tag.c_str());
       xjjroot::drawtex(0, 0.01, subtag.c_str(), 0.035, 11, 52, kGray+1);
       TLegend* leg = new TLegend(0.21, 0.79-0.045*nline, 0.55, 0.79);
       xjjroot::setleg(leg);

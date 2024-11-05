@@ -32,7 +32,8 @@ void setbranch(TTree* t, hfmax& hf) {
 
 auto cc = TColor::GetColor("#005b96");
 
-void draw(std::vector<TH2F*>& pieta, std::vector<TH2F*>& pphi, xjjroot::mypdf* pdf, std::vector<std::string> comment) {
+void draw(std::vector<TH2F*>& pieta, std::vector<TH2F*>& pphi, xjjroot::mypdf* pdf, std::string tag,
+          std::vector<std::string> comment = {}) {
   pdf->getc()->Divide(4, 2);
   auto pps = {pieta, pphi};
   int count = 1;
@@ -44,9 +45,8 @@ void draw(std::vector<TH2F*>& pieta, std::vector<TH2F*>& pphi, xjjroot::mypdf* p
       p[i]->SetMarkerStyle(21);
       p[i]->SetMarkerSize(0.2);
       p[i]->SetMarkerColor(cc);
-      p[i]->Draw();
-      xjjroot::drawCMSleft();
-      xjjroot::drawCMSright("2023 PbPb #sqrt{s_{NN}} = 5.36 TeV");
+      p[i]->Draw("scat=0.5");
+      xjjroot::drawCMS(xjjroot::CMS::internal, tag.c_str());
       float y = 0.89, dy = 0.04;
       for (auto str : comment) {
         xjjroot::drawtex(0.25, y-=dy, str.c_str(), 0.035);
@@ -62,7 +62,7 @@ int macro(std::string param)
   xjjc::config conf(param);
   conf.print();
   std::string inputname = conf["Input_adcana"], outputdir = conf["Output"];
-  auto tags = conf.vv("Tag");
+  auto tag = conf["Tag"];
 
   hfmax hf;
   
@@ -84,7 +84,7 @@ int macro(std::string param)
   
   auto nentries = adc->GetEntries();
   for (int i=0; i<nentries; i++) {
-    xjjc::progressslide(i, nentries, 1000);
+    xjjc::progressslide(i, nentries, 100);
     adc->GetEntry(i);
     pietaPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxietaPlus, hf.mMaxL1HFAdcPlus);
     piphiPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxiphiPlus, hf.mMaxL1HFAdcPlus);
@@ -97,15 +97,15 @@ int macro(std::string param)
 
   xjjroot::setgstyle();
   gStyle->SetLineScalePS(2);
-  auto pdf = new xjjroot::mypdf("plots/"+outputdir+"/hfchannel.pdf", "c", 2400, 1200);
+  auto pdf = new xjjroot::mypdf("figspdf/"+outputdir+"/hfchannel.pdf", "c", 2400, 1200);
   pdf->prepare();
-  draw(pietaPlus, piphiPlus, pdf, tags);
+  draw(pPlus, pMinus, pdf, tag);
   pdf->write();
   pdf->prepare();
-  draw(pietaMinus, piphiMinus, pdf, tags);
+  draw(pietaPlus, piphiPlus, pdf, tag);
   pdf->write();
   pdf->prepare();
-  draw(pPlus, pMinus, pdf, tags);
+  draw(pietaMinus, piphiMinus, pdf, tag);
   pdf->write();
 
   pdf->close();

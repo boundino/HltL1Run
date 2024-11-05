@@ -12,7 +12,7 @@
 #include "xjjcuti.h"
 #include "config.h"
 
-void adcToGeV(std::string param, int nevt = -1)
+void adcToGeV(std::string param, int nevt = 100)
 {
   xjjc::config conf(param);
   conf.print();
@@ -69,7 +69,7 @@ void adcToGeV(std::string param, int nevt = -1)
   int nentries = nevt>0&&nevt<l1Adc->GetEntries()?nevt:l1Adc->GetEntries();
   for(int i=0;i<nentries;i++)
     {
-      xjjc::progressbar(100, nentries);
+      xjjc::progressbar(i, nentries, 1000);
       l1Adc->GetEntry(i);
       // hiroot->GetEntry(i);
 

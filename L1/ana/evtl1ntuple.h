@@ -63,11 +63,11 @@ void l1trigger::evtl1ntuple::morecalculation()
   primaryVertexFilter        = mEvtSel[2];
   clusterCompatibilityFilter = mEvtSel[3];
 
-  ZDCplus = mZDCDigiPlus;
-  ZDCminus = mZDCDigiMinus;
+  // ZDCplus = mZDCDigiPlus;
+  // ZDCminus = mZDCDigiMinus;
 
-  // ZDCplus = mZDCRechitPlus;
-  // ZDCminus = mZDCRechitMinus;
+  ZDCplus = mZDCRechitPlus;
+  ZDCminus = mZDCRechitMinus;
 
   AdcAND = std::min(mMaxL1HFAdcPlus, mMaxL1HFAdcMinus);
   AdcOR = std::max(mMaxL1HFAdcPlus, mMaxL1HFAdcMinus);

@@ -10,8 +10,6 @@ const int nMaxEvtSelBits = 18;
 const int nMaxTrigHLTBits = 12;
 const int nZdcRechit = 18;
 const int nZdcDigi = 56;
-const int nZdcTs = 10;
-const int nZdcHAD = 4;
 
 const std::vector<std::string> hltpaths = {"HLT_HIMinimumBiasHF1AND_v3", "HLT_HIMinimumBiasHF1ANDZDC1nOR_v1", "HLT_HIMinimumBiasHF1ANDZDC2nOR_v3", "", "",
                                            "", "", "", "", "HLT_HIZeroBias_HighRate_v3",
@@ -43,12 +41,14 @@ private:
   int pprimaryVertexFilter;
   int pclusterCompatibilityFilter;
 
-  // mZdcRechitTree
-  int n_rec;
-  int zside_rec[nZdcRechit];
-  int section_rec[nZdcRechit];
-  int channel_rec[nZdcRechit];
-  float e_rec[nZdcRechit];
+  // mZdcRechitTree  
+  // int n_rec;
+  // int zside_rec[nZdcRechit];
+  // int section_rec[nZdcRechit];
+  // int channel_rec[nZdcRechit];
+  // float e_rec[nZdcRechit];
+  float sumPlus_rec;
+  float sumMinus_rec;
 
   // mZdcDigiTree
   int n_digi;
@@ -57,12 +57,8 @@ private:
   // int channel_digi[nZdcDigi];
   int adcTs2[nZdcDigi];
   int adcTs1[nZdcDigi];
-  // float chargefCTs5[nZdcDigi];
-  // float chargefCTs4[nZdcDigi];
-  // float chargefCTs3[nZdcDigi];
   float chargefCTs2[nZdcDigi];
   float chargefCTs1[nZdcDigi];
-  // float chargefCTs0[nZdcDigi];
 
   // mAdcTree
   int m_MaxL1HFAdcPlus = 0;
@@ -164,11 +160,13 @@ void EvtTowerInfoNTuple::setbranches()
   if(mZdcRechitTree)
     {
       std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mZdcRechitTree\e[0m"<<std::endl;
-      mZdcRechitTree->SetBranchAddress("n", &n_rec);
-      mZdcRechitTree->SetBranchAddress("zside", zside_rec);
-      mZdcRechitTree->SetBranchAddress("section", section_rec);
-      mZdcRechitTree->SetBranchAddress("channel", channel_rec);
-      mZdcRechitTree->SetBranchAddress("e", e_rec);
+      // mZdcRechitTree->SetBranchAddress("n", &n_rec);
+      // mZdcRechitTree->SetBranchAddress("zside", zside_rec);
+      // mZdcRechitTree->SetBranchAddress("section", section_rec);
+      // mZdcRechitTree->SetBranchAddress("channel", channel_rec);
+      // mZdcRechitTree->SetBranchAddress("e", e_rec);
+      mZdcRechitTree->SetBranchAddress("sumPlus", &sumPlus_rec);
+      mZdcRechitTree->SetBranchAddress("sumMinus", &sumMinus_rec);
     }
   else
     std::cout<<__FUNCTION__<<" \e[31m(x) no tree: mZdcRechitTree\e[0m"<<std::endl;
@@ -177,17 +175,13 @@ void EvtTowerInfoNTuple::setbranches()
     {
       std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mZdcDigiTree\e[0m"<<std::endl;
       mZdcDigiTree->SetBranchAddress("n", &n_digi);
-      // mZdcDigiTree->SetBranchAddress("zside", zside_digi);
-      // mZdcDigiTree->SetBranchAddress("section", section_digi);
-      // mZdcDigiTree->SetBranchAddress("channel", channel_digi);
+      mZdcDigiTree->SetBranchAddress("zside", zside_digi);
+      mZdcDigiTree->SetBranchAddress("section", section_digi);
+      mZdcDigiTree->SetBranchAddress("channel", channel_digi);
       mZdcDigiTree->SetBranchAddress("adcTs2", adcTs2);
       mZdcDigiTree->SetBranchAddress("adcTs1", adcTs1);
-      // mZdcDigiTree->SetBranchAddress("chargefCTs5", chargefCTs5);
-      // mZdcDigiTree->SetBranchAddress("chargefCTs4", chargefCTs4);
-      // mZdcDigiTree->SetBranchAddress("chargefCTs3", chargefCTs3);
       mZdcDigiTree->SetBranchAddress("chargefCTs2", chargefCTs2);
       mZdcDigiTree->SetBranchAddress("chargefCTs1", chargefCTs1);
-      // mZdcDigiTree->SetBranchAddress("chargefCTs0", chargefCTs0);
     }
   else
     std::cout<<__FUNCTION__<<" \e[31m(x) no tree: mZdcDigiTree\e[0m"<<std::endl;
@@ -251,15 +245,13 @@ void EvtTowerInfoNTuple::calculate()
       mRunNb = run;
       mLSNb = lumi;
       mEventNb = evt;
-      // mCenBin = hiBin;
-      mCenBin = getHiBinFromhiHF(hiHF);
+      mCenBin = hiBin;
+      // mCenBin = getHiBinFromhiHF(hiHF);
       mVx = vx;
       mVy = vy;
       mVz = vz;
-      mZDCPlus = hiZDCplus;
-      mZDCMinus = hiZDCminus;
-      if (hiZDCplus<0) mZDCPlus = 0;
-      if (hiZDCminus<0) mZDCMinus = 0;
+      mZDCPlus = std::max(hiZDCplus, 0);
+      mZDCMinus = std::max(hiZDCminus, 0);
       mNpixel = hiNpix;
       mNtrkoffline = hiNtracks;
       mNpixelTracks = hiNpixelTracks;
@@ -298,13 +290,15 @@ void EvtTowerInfoNTuple::calculate()
   mZDCRechitMinus = 0;
   if(mZdcRechitTree)
     {
-      for(int i=0; i<nZdcRechit; i++)
-        {
-          float ei = e_rec[i];
-          if(zside_rec[i] == 1) mZDCRechitPlus += ei;
-          else if(zside_rec[i] == -1) mZDCRechitMinus += ei;
-          else std::cout<<"error: invalid zside_rec."<<std::endl;
-        }
+      mZDCRechitPlus = sumPlus_rec;
+      mZDCRechitMinus = sumMinus_rec;
+      // for(int i=0; i<nZdcRechit; i++)
+      //   {
+      //     float ei = e_rec[i];
+      //     if(zside_rec[i] == 1) mZDCRechitPlus += ei;
+      //     else if(zside_rec[i] == -1) mZDCRechitMinus += ei;
+      //     else std::cout<<"error: invalid zside_rec."<<std::endl;
+      //   }
     }
 
   // ZDC digi
@@ -316,20 +310,6 @@ void EvtTowerInfoNTuple::calculate()
     {
       getsum(adcTs2, adcTs1, mZDCDigifromADCMinus, mZDCDigifromADCPlus);
       getsumch(chargefCTs2, chargefCTs1, mZDCDigiMinus, mZDCDigiPlus);
-      
-      // for(int i=0; i<18; i++)
-      //   {
-      //     if(section_digi[i] != 2) continue;
-      //     if(channel_digi[i] < 1 || channel_digi[i] > 4)
-      //       { std::cout<<"error: invalid channel_digi."<<std::endl; continue; }
-
-      //     int signal = adcTs[3][i]+adcTs[4][i] - 0.5*(adcTs[0][i] + adcTs[1][i]); // https://arxiv.org/abs/2102.06640
-      //     if(zside_digi[i] == 1)
-      //       mZDCHadPlus[channel_digi[i]-1] += signal;
-      //     else if(zside_digi[i] == -1)
-      //       mZDCHadMinus[channel_digi[i]-1] += signal;
-      //     else std::cout<<"error: invalid zside_digi."<<std::endl;
-      //   }
     }
 }
 
