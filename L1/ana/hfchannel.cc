@@ -67,7 +67,7 @@ int macro(std::string param)
   hfmax hf;
   
   auto inf = TFile::Open(inputname.c_str());
-  TTree* adc;
+  TTree* adc = 0;
   for (const std::string& tname : {"HFAdcana/adc", "mbnt"})
     if (xjjana::tree_exist(inf, tname.c_str())) {
       adc = (TTree*)inf->Get(tname.c_str());
