@@ -1,18 +1,11 @@
 #!/bin/bash
 
-comp="$(root-config --libs --cflags) -I$HOME"
-[[ $# == 0 || ${1:-0} -eq 1 ]] && { g++ adcToGeV.C $comp -g -o adcToGeV.exe || exit 1 ; }
-[[ $# == 0 || ${2:-0} -eq 1 ]] && { g++ drawadcToGeV.C $comp -g -o drawadcToGeV.exe || exit 1 ; }
+make adcToGeV drawadcToGeV 
 
-inputs=(
-    configs/run373870.conf
-)
+conf=$1
 
-for ii in ${inputs[@]}
-do
-    [[ ${1:-0} -eq 1 ]] && ./adcToGeV.exe $ii
-    [[ ${2:-0} -eq 1 ]] && ./drawadcToGeV.exe $ii
+[[ $conf == *conf && -f $conf ]] && {
+    [[ ${2:-0} -eq 1 ]] && ./adcToGeV $conf
+    [[ ${3:-0} -eq 1 ]] && ./drawadcToGeV $conf
+}
 
-done
-
-rm *.exe

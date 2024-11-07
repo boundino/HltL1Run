@@ -12,7 +12,7 @@
 #include "xjjcuti.h"
 #include "config.h"
 
-void adcToGeV(std::string param, int nevt = 100)
+void adcToGeV(std::string param, int nevt = 10000)
 {
   xjjc::config conf(param);
   conf.print();

@@ -79,7 +79,7 @@ void drawadcToGeV(std::string param)
 
       pdf->prepare();
       // c->SetLogz();
-      i->Draw("scat=0.5");
+      i->Draw("scat=0.005");
       p->Draw("le same");
       if(nline==2) 
         { 
