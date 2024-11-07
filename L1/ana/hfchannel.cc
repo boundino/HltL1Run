@@ -5,6 +5,7 @@
 #include <string>
 #include "xjjcuti.h"
 #include "xjjrootuti.h"
+#include "xjjanauti.h"
 #include "xjjmypdf.h"
 #include "config.h"
 
@@ -41,7 +42,6 @@ void draw(std::vector<TH2F*>& pieta, std::vector<TH2F*>& pphi, xjjroot::mypdf* p
     for (int i=0; i<4; i++) {
       pdf->getc()->cd(count);
       xjjroot::sethempty(p[i]);
-      // std::cout<<p[i]->GetMarkerStyle()<<", "<<p[i]->GetMarkerSize()<<std::endl;
       p[i]->SetMarkerStyle(21);
       p[i]->SetMarkerSize(0.2);
       p[i]->SetMarkerColor(cc);
@@ -61,13 +61,22 @@ int macro(std::string param)
 {
   xjjc::config conf(param);
   conf.print();
-  std::string inputname = conf["Input_adcana"], outputdir = conf["Output"];
+  std::string inputname = conf["Input"], outputdir = conf["Output"];
   auto tag = conf["Tag"];
 
   hfmax hf;
   
   auto inf = TFile::Open(inputname.c_str());
-  auto adc = (TTree*)inf->Get("HFAdcana/adc");
+  TTree* adc;
+  for (const std::string& tname : {"HFAdcana/adc", "mbnt"})
+    if (xjjana::tree_exist(inf, tname.c_str())) {
+      adc = (TTree*)inf->Get(tname.c_str());
+      std::cout<<"\e[32m(o) "<<tname<<"\e[0m"<<std::endl;
+      break;
+    } else {
+      std::cout<<"\e[31m(x) "<<tname<<"\e[0m"<<std::endl;
+    }
+  if (!adc) { std::cout<<"error: bad tree."<<std::endl; return 1; }
   setbranch(adc, hf);
 
   std::vector<TH2F*> pietaPlus(4, 0), pietaMinus(4, 0),
@@ -81,10 +90,11 @@ int macro(std::string param)
     piphiMinus[i] = new TH2F(Form("piphiMinus%d", i), ";iphi;Max ADC", 71, 0, 71, 19, 5, 24);
     pMinus[i] = new TH2F(Form("pMinus%d", i), ";ieta;iphi", 13, -41, -28, 71, 0, 71);
   }
-  
-  auto nentries = adc->GetEntries();
+
+  int nevtmax = 1.e4;
+  auto nentries = adc->GetEntries()<nevtmax?adc->GetEntries():nevtmax;
   for (int i=0; i<nentries; i++) {
-    xjjc::progressslide(i, nentries, 100);
+    xjjc::progressslide(i, nentries, 1000);
     adc->GetEntry(i);
     pietaPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxietaPlus, hf.mMaxL1HFAdcPlus);
     piphiPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxiphiPlus, hf.mMaxL1HFAdcPlus);
