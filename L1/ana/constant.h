@@ -8,29 +8,18 @@ namespace l1trigger
   const std::string mDir[nDirs] = {"Plus", "Minus"};
 
   const int nNeus = 4;
-  // const double mNeuZDCLow[nDirs][nNeus] = {
-  //   {0, 4.2e3, 10.e3, 20.e3},
-  //   {0, 6.0e3, 16.e3, 32.e3}
-  // };
-  // // const double mNeuZDCLow[nDirs][nNeus] = {
-  //   {-1.e10, 1.1e3, 3.8e3, 7.e3},
-  //   {-1.e10, 1.1e3, 3.8e3, 7.e3}
-  // };
-  const double mNeuZDCLow[nDirs][nNeus] = {
-    {-1.e10, 1.1e3, 4.e3, 6.65e3},
-    {-1.e10, 1.1e3, 4.e3, 6.65e3}
-  };
-  // const double mNeuZDCHi[nDirs][nNeus] = {
-  //   {4.2e3, 10.e3, 20.e3, 5.e5},
-  //   {6.0e3, 16.e3, 32.e3, 6.e5}
-  // };
+  const double mNeuZDCLow[nDirs][nNeus] =
+    { {-1.e10, 1.1e3, 4.e3, 6.65e3},
+      {-1.e10, 1.1e3, 4.e3, 6.65e3}
+    };
 
   std::vector<std::vector<short int>> cents = {{0, 200}, 
-                                           {0, 10, 140, 160, 170, 180, 200}};
+                                               {0, 10, 140, 160, 180, 200}};
   std::vector<short int> cent; int ncent; std::vector<float> fcent;
-  void setcent(xjjc::config& conf)
-  {
-    int i = conf.vi("Opt_cent");
+  // void setcent(xjjc::config& conf) {
+  void setcent() {
+    // int i = conf.vi("Opt_cent");
+    int i = 1;
     cent = cents[i];
     ncent = cent.size()-1;
     fcent.resize(cent.size());
@@ -38,5 +27,38 @@ namespace l1trigger
       fcent[j] = (float)(cent[j]);
   }
 
+  int MBindex, nneu, drawhlt;
+  void sethlt(std::string MBhlt) {
+    MBindex = -1;
+    nneu = 0;
+    drawhlt = 1;
+    if (MBhlt != "") {
+      if (xjjc::str_contains(MBhlt, "ZDC1n")) {
+        MBindex = 2;
+        nneu = 1;
+      } else if (xjjc::str_contains(MBhlt, "ZDC2n")) {
+        MBindex = 3;
+        nneu = 2;
+      } else if (xjjc::str_contains(MBhlt, "MinimumBiasHF1")) {
+        MBindex = 1;
+        nneu = 0;
+      } else {
+        drawhlt = 0;
+        std::cout<<"warning: HLT not properly set: "<<MBhlt<<"."<<std::endl;
+      }
+    } else {
+      drawhlt = 0;
+    }
+  }
+
   const int nadc = 30, nbincent = 20;
+
+  float rate_min = 0, rate_max = 50;
+  void setraterange(float nBunch) {
+    if (nBunch > 0) {
+      float expected = 2/53.*nBunch;
+      rate_min = expected * (1-0.4);
+      rate_max = expected * (1+0.4);
+    }
+  }
 }

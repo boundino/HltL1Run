@@ -3,6 +3,7 @@
 
 #include <TFile.h>
 #include <TTree.h>
+#include "../includes/ntbranches.h"
 
 namespace l1trigger
 {
@@ -12,86 +13,48 @@ namespace l1trigger
     evtl1ntuple(TTree* nt_);
     void GetEntry(int i) { fnt->GetEntry(i); morecalculation(); }
     TTree* nt() { return fnt; }
-    UInt_t          mRunNb;
-    UInt_t          mLSNb;
-    UInt_t          mEventNb;
-    Short_t         mCenBin;
-    Float_t         mVz;
-    Float_t         mZDCPlus;
-    Float_t         mZDCMinus;
-    Float_t         mZDCRechitPlus;
-    Float_t         mZDCRechitMinus;
-    Float_t         mZDCDigiPlus;
-    Float_t         mZDCDigiMinus;
-    Int_t           mHFnhfp;
-    Int_t           mHFnhfn;
-    Int_t           mMaxL1HFAdcPlus;
-    Int_t           mMaxL1HFAdcMinus;
-    Int_t           mNpixel;
-    Int_t           mNtrkoffline;
-    Bool_t          mTrigHLT[12];
-    Bool_t          mEvtSel[18];
-    int  mMBindex;
-
     //
-    Float_t  ZDCplus;
-    Float_t  ZDCminus;
-    Bool_t  ZB_HLTBit;
-    Bool_t  colEvtSel;
-    Bool_t  hfCoincFilter2Th4;
-    Bool_t  primaryVertexFilter;
-    Bool_t  clusterCompatibilityFilter;
-    int  AdcAND;
-    int  AdcOR;
+    float ZDCplus;
+    float ZDCminus;
+    bool HLT_ZB;
+    bool colEvtSel;
+    bool hfCoincFilter2Th4;
+    bool primaryVertexFilter;
+    bool clusterCompatibilityFilter;
+    int AdcAND;
+    int AdcOR;
+
+    ntbranches br;
+    
   private:
     TTree* fnt;
+
     void setbranchaddress();
     void morecalculation();
   };
 }
 
-l1trigger::evtl1ntuple::evtl1ntuple(TTree* nt_) : fnt(nt_)
-{
+l1trigger::evtl1ntuple::evtl1ntuple(TTree* nt_) : fnt(nt_) {
   setbranchaddress();
 }
 
-void l1trigger::evtl1ntuple::morecalculation()
-{
-  ZB_HLTBit                  = mTrigHLT[9];
-  colEvtSel                  = mEvtSel[0];
-  hfCoincFilter2Th4          = mEvtSel[1];
-  primaryVertexFilter        = mEvtSel[2];
-  clusterCompatibilityFilter = mEvtSel[3];
+void l1trigger::evtl1ntuple::morecalculation() {
+  HLT_ZB                     = br.mTrigHLT[0];
+  colEvtSel                  = br.mEvtSel[0];
+  hfCoincFilter2Th4          = br.mEvtSel[1];
+  primaryVertexFilter        = br.mEvtSel[2];
+  clusterCompatibilityFilter = br.mEvtSel[3];
 
-  // ZDCplus = mZDCDigiPlus;
-  // ZDCminus = mZDCDigiMinus;
+  ZDCplus = br.mzdcsumPlus;
+  ZDCminus = br.mzdcsumMinus;
 
-  ZDCplus = mZDCRechitPlus;
-  ZDCminus = mZDCRechitMinus;
+  AdcAND = std::min(br.mMaxL1HFAdcPlus, br.mMaxL1HFAdcMinus);
+  AdcOR = std::max(br.mMaxL1HFAdcPlus, br.mMaxL1HFAdcMinus);
 
-  AdcAND = std::min(mMaxL1HFAdcPlus, mMaxL1HFAdcMinus);
-  AdcOR = std::max(mMaxL1HFAdcPlus, mMaxL1HFAdcMinus);
 }
 
-void l1trigger::evtl1ntuple::setbranchaddress()
-{
-  fnt->SetBranchAddress("mRunNb", &mRunNb);
-  fnt->SetBranchAddress("mLSNb", &mLSNb);
-  fnt->SetBranchAddress("mEventNb", &mEventNb);
-  fnt->SetBranchAddress("mCenBin", &mCenBin);
-  fnt->SetBranchAddress("mVz", &mVz);
-  fnt->SetBranchAddress("mZDCPlus", &mZDCPlus);
-  fnt->SetBranchAddress("mZDCMinus", &mZDCMinus);
-  fnt->SetBranchAddress("mZDCRechitPlus", &mZDCRechitPlus);
-  fnt->SetBranchAddress("mZDCRechitMinus", &mZDCRechitMinus);
-  fnt->SetBranchAddress("mZDCDigiPlus", &mZDCDigiPlus);
-  fnt->SetBranchAddress("mZDCDigiMinus", &mZDCDigiMinus);
-  fnt->SetBranchAddress("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus);
-  fnt->SetBranchAddress("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus);
-  fnt->SetBranchAddress("mNpixel", &mNpixel);
-  fnt->SetBranchAddress("mNtrkoffline", &mNtrkoffline);
-  fnt->SetBranchAddress("mTrigHLT", mTrigHLT);
-  fnt->SetBranchAddress("mEvtSel", mEvtSel);
+void l1trigger::evtl1ntuple::setbranchaddress() {
+  nt_setbranchaddress(fnt, br);
 }
 
 #endif
