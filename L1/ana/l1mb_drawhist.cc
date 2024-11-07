@@ -25,7 +25,6 @@ int macro(std::string param)
   auto nBunch = conf.vf("nBunch");
   l1trigger::setraterange(nBunch);
   
-  // int colors[] = {kGray+3, xjjroot::mycolor_satmiddle["red"], xjjroot::mycolor_satmiddle["azure"], xjjroot::mycolor_satmiddle["green"], kMagenta+1, kCyan+1};
   int colors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1, kCyan+1};
 
   auto inf = TFile::Open(Form("rootfiles/%s/savehist.root", outputdir.c_str()));
@@ -154,14 +153,14 @@ int macro(std::string param)
   leg_And_HFOnly->Draw();
   xjjroot::drawtex(0.23, 0.80, "HF only", 0.035, 12, 62);
   pdf->getc()->RedrawAxis();
-  pdf->write("figs/" + outputdir + "/per-eff-cent.pdf");
+  pdf->write();
 
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
   gr_heff_And_ZDCOr_int[0]->Draw("plXe same");
   xjjroot::drawtex(0.23, 0.80, "HF only", 0.035, 12, 62);
   pdf->getc()->RedrawAxis();
-  pdf->write("figs/" + outputdir + "/per-eff-int.pdf");
+  pdf->write();
 
   // ZDC distribution
   pdf->getc()->SetLogy();
@@ -213,7 +212,7 @@ int macro(std::string param)
       }
       xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32);
       pdf->getc()->RedrawAxis();
-      pdf->write(Form("figs/%s/per-eff-rate-%d-%d.pdf", outputdir.c_str(), l1trigger::cent[l]/2, l1trigger::cent[l+1]/2));
+      pdf->write();
     }
 
   // HF_And_ZDCAnd/Or ROC - fake
@@ -237,7 +236,7 @@ int macro(std::string param)
     }
     xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32);
     pdf->getc()->RedrawAxis();
-    pdf->write(Form("figs/%s/per-eff-fake-%d-%d.pdf", outputdir.c_str(), l1trigger::cent[l]/2, l1trigger::cent[l+1]/2));
+    pdf->write();
   }
 
   int thisnneu = 1;
@@ -253,7 +252,7 @@ int macro(std::string param)
   //   xjjroot::drawtex(0.23, 0.25, Form("Rate [ZDC Or %dn] = %.2f kHz (HF thre = %d)", thisnneu, hrate_And_ZDCOr[thisnneu]->GetBinContent(aOr+1), aOr), 0.038, 12, 42, colors[thisnneu]);
   //   xjjroot::drawtex(0.23, 0.35, "Similar rate w/ vs. w/o ZDCOR", 0.035, 12, 62);
   //   pdf->getc()->RedrawAxis();
-  //   pdf->write(Form("figs/%s/per-eff-cent-similarrate-thred%d.pdf", outputdir.c_str(), a));
+  //   pdf->write();
   // }
 
   // HFcent_And_ZDCAnd/Or - compare same HF adc
@@ -266,7 +265,7 @@ int macro(std::string param)
     xjjroot::drawtex(0.23, 0.25, Form("Rate [ZDC Or %dn] = %.2f kHz", thisnneu, hrate_And_ZDCOr[thisnneu]->GetBinContent(a+1)), 0.038, 12, 42, colors[thisnneu]);
     xjjroot::drawtex(0.23, 0.35, Form("Same HF threshold = %d", a), 0.035, 12, 62);
     pdf->getc()->RedrawAxis();
-    pdf->write(Form("figs/%s/per-eff-cent-thred%d.pdf", outputdir.c_str(), a));
+    pdf->write();
   }
 
   // HFcent_And_ZDCAnd/Or - fixed rate
@@ -288,7 +287,7 @@ int macro(std::string param)
     xjjroot::drawtex(0.23, 0.30, Form("L1 MB rate #approx %.0f kHz", frate*prescale), 0.038, 12);
     xjjroot::drawtex(0.23, 0.35, "Similar rate w/ vs. w/o ZDCOR", 0.035, 12, 62);
     pdf->getc()->RedrawAxis();
-    pdf->write(Form("figs/%s/per-eff-cent-similarrate-prescl%.1f.pdf", outputdir.c_str(), prescale));
+    pdf->write();
   }
 
   // --> Individuals (only HF and 2n)
@@ -311,7 +310,7 @@ int macro(std::string param)
   //     drawhfth(groc_And_ZDCOr[l1trigger::nneu][l], hempty);
   //     leg_ind1->Draw();
   //     xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32);
-  //     pdf->write(Form("figs/%s/per-eff-rate-%d-%d-clean.pdf", outputdir.c_str(), l1trigger::cent[l]/2, l1trigger::cent[l+1]/2));
+  //     pdf->write();
   //   }
 
   // // >>
@@ -366,7 +365,7 @@ int macro(std::string param)
   //   t_And_ZDC->Draw();
   //   xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32);
   //   pdf->getc()->RedrawAxis();
-  //   pdf->write(Form("figs/%s/per-eff-fake-%d-%d-official.pdf", outputdir.c_str(), l1trigger::cent[l]/2, l1trigger::cent[l+1]/2));
+  //   pdf->write();
   // }
   
   pdf->close();
