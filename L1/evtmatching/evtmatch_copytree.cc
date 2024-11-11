@@ -23,7 +23,11 @@ int evtmatching(std::string infforest, std::string infl1, std::string outfile, L
   auto l1BTree = new TChain("l1uGTEmuTree/L1uGTTree");
   l1BTree->Add(infl1.c_str());
 
-  auto outf = new TFile(outfile.c_str(), "recreate");
+  auto outf = new TFile(outfile.c_str(), "create");
+  if (!outf->IsOpen()) {
+    std::cout<<"\e[31merror:\e[0m make sure the output file does not exist already. This is to avoid modifying input files due to asterisk by mistake."<<std::endl;
+    return 1;
+  }
   auto dhiroot = outf->mkdir("hiEvtAnalyzer","");
   dhiroot->cd(); TTree* new_hiroot = hiroot->CloneTree(0);
   auto dskimroot = outf->mkdir("skimanalysis","");
@@ -101,7 +105,6 @@ int evtmatching(std::string infforest, std::string infl1, std::string outfile, L
       hiroot->GetEntry(k); //
       skimroot->GetEntry(k); //
       muonroot->GetEntry(k); //
-      // l1EvtTree->GetEntry(j); //
       l1ATree->GetEntry(j); //
       l1BTree->GetEntry(j); //
 
@@ -111,8 +114,6 @@ int evtmatching(std::string infforest, std::string infl1, std::string outfile, L
       new_skimroot->Fill();
       dmuonroot->cd();
       new_muonroot->Fill();
-      // dl1EvtTree->cd();
-      // new_l1EvtTree->Fill();
       dl1ATree->cd(); // slow tree
       new_l1ATree->Fill();
       dl1BTree->cd(); // slow tree
