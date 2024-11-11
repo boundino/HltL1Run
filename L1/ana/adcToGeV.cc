@@ -12,7 +12,7 @@
 #include "xjjcuti.h"
 #include "config.h"
 
-void adcToGeV(std::string param, int nevt = 10000)
+void adcToGeV(std::string param, int nevt = 2.e+3)
 {
   xjjc::config conf(param);
   conf.print();
@@ -67,9 +67,10 @@ void adcToGeV(std::string param, int nevt = 10000)
   // vhist.push_back(hcorrtower_Esum_Eoffline);
 
   int nentries = nevt>0&&nevt<l1Adc->GetEntries()?nevt:l1Adc->GetEntries();
+  auto hevt = new TH1F("hevt", "", 1, 0, 1); hevt->SetBinContent(1, nentries);
   for(int i=0;i<nentries;i++)
     {
-      xjjc::progressbar(i, nentries, 1000);
+      xjjc::progressbar(i, nentries, 100);
       l1Adc->GetEntry(i);
       // hiroot->GetEntry(i);
 
@@ -118,6 +119,7 @@ void adcToGeV(std::string param, int nevt = 10000)
   // hcorrtower_E_Eoffline->Write();
   // hcorrtower_ADCsum_Eoffline->Write();
   // hcorrtower_Esum_Eoffline->Write();
+  hevt->Write();
   output->Close();
 }
 

@@ -60,6 +60,8 @@ void drawadcToGeV(std::string param)
   // vhist.push_back(hcorrtower_ADCsum_Eoffline);
   // TH2F* hcorrtower_Esum_Eoffline = (TH2F*)inf->Get("hcorrtower_Esum_Eoffline");
   // vhist.push_back(hcorrtower_Esum_Eoffline);
+  float nevt = ((TH1F*)inf->Get("hevt"))->GetBinContent(1),
+    sscat = 0.005*1.5e3/nevt;
   
   ffleg* f = new ffleg("(x-4)*0.5", "(x-4)*0.8", "0.5-0.8 GeV/ADC (4 ADC shift)");
   ffleg* f_ped = new ffleg("x*0.5", "x*0.8", "0.5-0.8 GeV/ADC");
@@ -79,7 +81,7 @@ void drawadcToGeV(std::string param)
 
       pdf->prepare();
       // c->SetLogz();
-      i->Draw("scat=0.005");
+      i->Draw(Form("scat=%f", sscat));
       p->Draw("le same");
       if(nline==2) 
         { 
