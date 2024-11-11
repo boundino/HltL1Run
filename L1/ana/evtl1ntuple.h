@@ -16,11 +16,8 @@ namespace l1trigger
     //
     float ZDCplus;
     float ZDCminus;
-    bool HLT_ZB;
+    int HLT_ZB;
     bool colEvtSel;
-    bool hfCoincFilter2Th4;
-    bool primaryVertexFilter;
-    bool clusterCompatibilityFilter;
     int AdcAND;
     int AdcOR;
 
@@ -40,10 +37,8 @@ l1trigger::evtl1ntuple::evtl1ntuple(TTree* nt_) : fnt(nt_) {
 
 void l1trigger::evtl1ntuple::morecalculation() {
   HLT_ZB                     = br.mTrigHLT[0];
-  colEvtSel                  = br.mEvtSel[0];
-  hfCoincFilter2Th4          = br.mEvtSel[1];
-  primaryVertexFilter        = br.mEvtSel[2];
-  clusterCompatibilityFilter = br.mEvtSel[3];
+  colEvtSel                  = (bool)(br.mpphfCoincFilterPF2Th7 && br.mpprimaryVertexFilter && br.mpclusterCompatibilityFilter);
+  // colEvtSel                  = (bool)(br.mpprimaryVertexFilter && br.mpclusterCompatibilityFilter);
 
   ZDCplus = br.mzdcsumPlus;
   ZDCminus = br.mzdcsumMinus;

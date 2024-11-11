@@ -1,3 +1,6 @@
+#ifndef __L1_CONSTANT_
+#define __L1_CONSTANT_
+
 #include <string>
 #include <vector>
 #include "config.h"
@@ -13,16 +16,12 @@ namespace l1trigger
       {-1.e10, 1.1e3, 4.e3, 6.65e3}
     };
 
-  std::vector<std::vector<short int>> cents = {{0, 200}, 
-                                               {0, 10, 140, 160, 180, 200}};
-  std::vector<short int> cent; int ncent; std::vector<float> fcent;
-  // void setcent(xjjc::config& conf) {
+  // std::vector<std::vector<short int>> cents = {{0, 200}, 
+  //                                              {0, 10, 140, 160, 180, 200}};
+  std::vector<short int> cent = {0, 10, 140, 160, 180, 200};
+  const int ncent = cent.size() - 1;
+  std::vector<float> fcent(cent.size());
   void setcent() {
-    // int i = conf.vi("Opt_cent");
-    int i = 1;
-    cent = cents[i];
-    ncent = cent.size()-1;
-    fcent.resize(cent.size());
     for (int j=0; j<cent.size(); j++)
       fcent[j] = (float)(cent[j]);
   }
@@ -62,3 +61,5 @@ namespace l1trigger
     }
   }
 }
+
+#endif

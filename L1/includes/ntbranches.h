@@ -1,5 +1,4 @@
 
-#define MAX_EVTSEL 5
 #define MAX_HLT 4
 // HLT_HIZeroBias_HighRate_v, HLT_HIMinimumBiasHF1AND_v, HLT_HIMinimumBiasHF1ANDZDC1nOR_v, HLT_HIMinimumBiasHF1ANDZDC2nOR_v
 #define STR_HELPER(x) #x
@@ -17,8 +16,16 @@ struct ntbranches {
   int          mMaxiphiPlus, mMaxiphiMinus;
   int          mMaxdepthPlus, mMaxdepthMinus;
   int          mNpixel, mNtrkoffline, mNpixelTracks;
-  bool         mTrigHLT[MAX_HLT];
-  bool         mEvtSel[MAX_EVTSEL];
+  int          mTrigHLT[MAX_HLT];
+  int          mpprimaryVertexFilter;
+  int          mpclusterCompatibilityFilter;
+  int          mpphfCoincFilter2Th4;
+  int          mpphfCoincFilterPF2Th4;
+  int          mpphfCoincFilterPF2Th5;
+  int          mpphfCoincFilterPF2Th6;
+  int          mpphfCoincFilterPF2Th7;
+  int          mpphfCoincFilterPF2Th8;
+  int          mpphfCoincFilterPF2Th9;
 };
 
 void nt_branch(TTree* t, ntbranches& br) {
@@ -40,10 +47,17 @@ void nt_branch(TTree* t, ntbranches& br) {
   t->Branch("mNpixel", &br.mNpixel, "mNpixel/I");
   t->Branch("mNtrkoffline", &br.mNtrkoffline, "mNtrkoffline/I");
   t->Branch("mNpixelTracks", &br.mNpixelTracks, "mNpixelTracks/I");
-  // t->Branch("mTrigHLT", br.mTrigHLT, Form("mTrigHLT[%d]/O", MAX_HLT));
-  // t->Branch("mEvtSel", br.mEvtSel, Form("mEvtSel[%d]/O", MAX_EVTSEL));
-  t->Branch("mTrigHLT", br.mTrigHLT, "mTrigHLT[" STR(MAX_HLT) "]/O");
-  t->Branch("mEvtSel", br.mEvtSel, "mEvtSel[" STR(MAX_EVTSEL) "]/O");
+  t->Branch("mpprimaryVertexFilter", &br.mpprimaryVertexFilter, "mpprimaryVertexFilter/I");
+  t->Branch("mpclusterCompatibilityFilter", &br.mpclusterCompatibilityFilter, "mpclusterCompatibilityFilter/I");
+  t->Branch("mpphfCoincFilter2Th4", &br.mpphfCoincFilter2Th4, "mpphfCoincFilter2Th4/I");
+  t->Branch("mpphfCoincFilterPF2Th4", &br.mpphfCoincFilterPF2Th4, "mpphfCoincFilterPF2Th4/I");
+  t->Branch("mpphfCoincFilterPF2Th5", &br.mpphfCoincFilterPF2Th5, "mpphfCoincFilterPF2Th5/I");
+  t->Branch("mpphfCoincFilterPF2Th6", &br.mpphfCoincFilterPF2Th6, "mpphfCoincFilterPF2Th6/I");
+  t->Branch("mpphfCoincFilterPF2Th7", &br.mpphfCoincFilterPF2Th7, "mpphfCoincFilterPF2Th7/I");
+  t->Branch("mpphfCoincFilterPF2Th8", &br.mpphfCoincFilterPF2Th8, "mpphfCoincFilterPF2Th8/I");
+  t->Branch("mpphfCoincFilterPF2Th9", &br.mpphfCoincFilterPF2Th9, "mpphfCoincFilterPF2Th9/I");
+  t->Branch("mTrigHLT", br.mTrigHLT, "mTrigHLT[" STR(MAX_HLT) "]/I");
+  // t->Branch("mEvtSel", br.mEvtSel, "mEvtSel[" STR(MAX_EVTSEL) "]/O");
 }
 
 void nt_setbranchaddress(TTree* t, ntbranches& br) {
@@ -65,8 +79,17 @@ void nt_setbranchaddress(TTree* t, ntbranches& br) {
   t->SetBranchAddress("mNpixel", &br.mNpixel);
   t->SetBranchAddress("mNtrkoffline", &br.mNtrkoffline);
   t->SetBranchAddress("mNpixelTracks", &br.mNpixelTracks);
+  t->SetBranchAddress("mpprimaryVertexFilter", &br.mpprimaryVertexFilter);
+  t->SetBranchAddress("mpclusterCompatibilityFilter", &br.mpclusterCompatibilityFilter);
+  t->SetBranchAddress("mpphfCoincFilter2Th4", &br.mpphfCoincFilter2Th4);
+  t->SetBranchAddress("mpphfCoincFilterPF2Th4", &br.mpphfCoincFilterPF2Th4);
+  t->SetBranchAddress("mpphfCoincFilterPF2Th5", &br.mpphfCoincFilterPF2Th5);
+  t->SetBranchAddress("mpphfCoincFilterPF2Th6", &br.mpphfCoincFilterPF2Th6);
+  t->SetBranchAddress("mpphfCoincFilterPF2Th7", &br.mpphfCoincFilterPF2Th7);
+  t->SetBranchAddress("mpphfCoincFilterPF2Th8", &br.mpphfCoincFilterPF2Th8);
+  t->SetBranchAddress("mpphfCoincFilterPF2Th9", &br.mpphfCoincFilterPF2Th9);
   t->SetBranchAddress("mTrigHLT", br.mTrigHLT);
-  t->SetBranchAddress("mEvtSel", br.mEvtSel);
+  // t->SetBranchAddress("mEvtSel", br.mEvtSel);
 }
 
 void nt_cleanbranch(ntbranches& br) {
@@ -88,8 +111,18 @@ void nt_cleanbranch(ntbranches& br) {
   br.mNpixel = -1;
   br.mNtrkoffline = -1;
   br.mNpixelTracks = -1;
-  for (int i=0; i<MAX_EVTSEL; i++)
-    br.mEvtSel[i] = true;
+  br.mpprimaryVertexFilter = true;
+  br.mpclusterCompatibilityFilter = true;
+  br.mpphfCoincFilter2Th4 = true;
+  br.mpphfCoincFilterPF2Th4 = true;
+  br.mpphfCoincFilterPF2Th5 = true;
+  br.mpphfCoincFilterPF2Th6 = true;
+  br.mpphfCoincFilterPF2Th7 = true;
+  br.mpphfCoincFilterPF2Th8 = true;
+  br.mpphfCoincFilterPF2Th9 = true;
+
+  // for (int i=0; i<MAX_EVTSEL; i++)
+  //   br.mEvtSel[i] = true;
   for (int i=0; i<MAX_HLT; i++)
     br.mTrigHLT[i] = true;
 }

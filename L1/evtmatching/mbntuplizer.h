@@ -33,6 +33,12 @@ private:
 
   // mSkimTree
   int pphfCoincFilter2Th4;
+  int pphfCoincFilterPF2Th4;
+  int pphfCoincFilterPF2Th5;
+  int pphfCoincFilterPF2Th6;
+  int pphfCoincFilterPF2Th7;
+  int pphfCoincFilterPF2Th8;
+  int pphfCoincFilterPF2Th9;
   int pprimaryVertexFilter;
   int pclusterCompatibilityFilter;
 
@@ -116,9 +122,15 @@ void mbntuplizer::setbranches() {
 
   if (mSkimTree) {
     std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mSkimTree\e[0m"<<std::endl;
-    mSkimTree->SetBranchAddress("pphfCoincFilter2Th4", &pphfCoincFilter2Th4);
     mSkimTree->SetBranchAddress("pprimaryVertexFilter", &pprimaryVertexFilter);
     mSkimTree->SetBranchAddress("pclusterCompatibilityFilter", &pclusterCompatibilityFilter);
+    mSkimTree->SetBranchAddress("pphfCoincFilter2Th4", &pphfCoincFilter2Th4);
+    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th4", &pphfCoincFilterPF2Th4);
+    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th5", &pphfCoincFilterPF2Th5);
+    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th6", &pphfCoincFilterPF2Th6);
+    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th7", &pphfCoincFilterPF2Th7);
+    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th8", &pphfCoincFilterPF2Th8);
+    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th9", &pphfCoincFilterPF2Th9);
   }
   else
     std::cout<<__FUNCTION__<<" \e[31m(x) no tree: mSkimTree\e[0m"<<std::endl;
@@ -161,7 +173,7 @@ void mbntuplizer::setbranches() {
   else
     std::cout<<__FUNCTION__<<" \e[31m(x) no tree: mZdcDigiTree\e[0m"<<std::endl;
 
-  for (int i=0; i<MAX_HLT; i++) { hlt[i] = 1; }
+  for (int i=0; i<mhltpaths.size(); i++) { hlt[i] = 1; }
   if (mHltTree) {
     std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mHltTree\e[0m"<<std::endl;
     mHltTree->SetBranchStatus("*", 0);
@@ -211,19 +223,27 @@ void mbntuplizer::calculate() {
     br.mMaxdepthMinus = mMaxdepthMinus;
   }
   
-  for (int i=0; i<mhltpaths.size(); i++) {
-    br.mTrigHLT[i] = (bool)(hlt[i]);
+  if (mHltTree) {
+    for (int i=0; i<MAX_HLT; i++) {
+      br.mTrigHLT[i] = hlt[i];
+    }
   }
 
   if (mSkimTree) {
-    br.mEvtSel[1] = (bool)pphfCoincFilter2Th4;
-    br.mEvtSel[2] = (bool)pprimaryVertexFilter;
-    br.mEvtSel[3] = (bool)pclusterCompatibilityFilter;
+    br.mpprimaryVertexFilter = pprimaryVertexFilter;
+    br.mpclusterCompatibilityFilter = pclusterCompatibilityFilter;
+    br.mpphfCoincFilter2Th4 = pphfCoincFilter2Th4;
+    br.mpphfCoincFilterPF2Th4 = pphfCoincFilterPF2Th4;
+    br.mpphfCoincFilterPF2Th5 = pphfCoincFilterPF2Th5;
+    br.mpphfCoincFilterPF2Th6 = pphfCoincFilterPF2Th6;
+    br.mpphfCoincFilterPF2Th7 = pphfCoincFilterPF2Th7;
+    br.mpphfCoincFilterPF2Th8 = pphfCoincFilterPF2Th8;
+    br.mpphfCoincFilterPF2Th9 = pphfCoincFilterPF2Th9;
   }
   else if (mAdcTree) {
-    br.mEvtSel[1] = nhfp > 1 && nhfn > 1;
+    br.mpphfCoincFilter2Th4 = nhfp > 1 && nhfn > 1;
   }
-  br.mEvtSel[0] = br.mEvtSel[1] && br.mEvtSel[2] && br.mEvtSel[3];
+  // br.mEvtSel[0] = br.mEvtSel[1] && br.mEvtSel[2] && br.mEvtSel[3];
 
   // ZDC rechit
   if (mZdcRechitTree) {
