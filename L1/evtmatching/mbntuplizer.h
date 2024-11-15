@@ -1,9 +1,7 @@
 #ifndef __MAKETREE_H_
 #define __MAKETREE_H_
 
-// #include "cent/cent_MC_122X.h"
-// #include "cent/cent_data.h"
-#include "cent/cent_data_2022.h"
+#include "cent/cent_data_2024.h"
 #include "zdc.h"
 #include "../includes/ntbranches.h"
 
@@ -201,8 +199,8 @@ void mbntuplizer::calculate() {
     br.mLS = lumi;
     br.mEvent = evt;
     br.mhiHF = hiHF;
-    br.mhiBin = hiBin;
-    // br.mhiBin = getHiBinFromhiHF(hiHF);
+    // br.mhiBin = hiBin;
+    br.mhiBin = getHiBinFromhiHF(hiHF);
     br.mNpixel = hiNpix;
     br.mNtrkoffline = hiNtracks;
     br.mNpixelTracks = hiNpixelTracks;

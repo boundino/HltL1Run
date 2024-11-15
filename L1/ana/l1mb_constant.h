@@ -12,8 +12,13 @@ namespace l1trigger
 
   const int nNeus = 4;
   const double mNeuZDCLow[nDirs][nNeus] =
-    { {-1.e10, 1.1e3, 4.e3, 6.65e3},
-      {-1.e10, 1.1e3, 4.e3, 6.65e3}
+    {
+     // {-1.e10, 1.1e3, 4.e3, 6.65e3},
+     // {-1.e10, 1.1e3, 4.e3, 6.65e3}
+     {-1.e10, 1.76e3, 6.4e3, 10.64e3},
+     {-1.e10, 1.76e3, 6.4e3, 10.64e3}
+     // {-1.e10, 1.6e3, 1.92e3, 2.08e3},
+     // {-1.e10, 1.6e3, 1.92e3, 2.08e3}
     };
 
   // std::vector<std::vector<short int>> cents = {{0, 200}, 

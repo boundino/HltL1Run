@@ -122,10 +122,10 @@ int macro(std::string param)
       for (int k=l1trigger::nNeus-1; k>=0; k--) {
         groc_And_ZDCOr[k][l]->Draw("same pl");
         drawhfth(groc_And_ZDCOr[k][l], hempty);
-        groc_And_ZDCAnd[k][l]->Draw("same pl");
-        drawhfth(groc_And_ZDCAnd[k][l], hempty);
+        // groc_And_ZDCAnd[k][l]->Draw("same pl");
+        // drawhfth(groc_And_ZDCAnd[k][l], hempty);
       }
-      lt_And_ZDCAnd->draw();
+      // lt_And_ZDCAnd->draw();
       lt_And_ZDCOr->draw();
       if (l1trigger::drawhlt) {
         xjjroot::drawpoint(hlt_rate, hcent_hlt_eff->GetBinContent(l+1), l1style::colors[l1trigger::nneu], 47, 2.0);
@@ -145,10 +145,10 @@ int macro(std::string param)
     for (int k=l1trigger::nNeus-1; k>=0; k--) {
       gfake_And_ZDCOr[k][l]->Draw("same pl");
       drawhfth(gfake_And_ZDCOr[k][l], hemptyfake);
-      gfake_And_ZDCAnd[k][l]->Draw("same pl");
-      drawhfth(gfake_And_ZDCAnd[k][l], hemptyfake);
+      // gfake_And_ZDCAnd[k][l]->Draw("same pl");
+      // drawhfth(gfake_And_ZDCAnd[k][l], hemptyfake);
     }
-    lt_And_ZDCAnd->draw();
+    // lt_And_ZDCAnd->draw();
     lt_And_ZDCOr->draw();
     if (l1trigger::drawhlt) {
       xjjroot::drawpoint(hlt_fake, hcent_hlt_eff->GetBinContent(l+1), l1style::colors[l1trigger::nneu], 47, 2.);
