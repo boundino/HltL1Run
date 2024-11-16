@@ -11,25 +11,19 @@
 #include "l1mb_constant.h"
 #include "l1mb_helper.h"
 
-float frate = 20;
+float frate = 50;
 
 int macro(std::string param)
 {
   xjjc::config conf(param);
   conf.print();
-  std::string outputdir = conf["Output"], MBhlt = conf["MBhlt"];
-  tag_ = conf["Tag"]; subtag_ = conf["SubTag"];
-  l1trigger::sethlt(MBhlt);
-  l1trigger::setcent();
-  auto nBunch = conf.vf("nBunch");
-  l1trigger::setraterange(nBunch);
+  std::string outputdir = conf["Output"];
+  if (l1trigger::setconfig(conf)) return 2;
   
   auto inf = TFile::Open(Form("rootfiles/%s/savehist.root", outputdir.c_str()));
 
-  float ZBrate = hist_to_value(inf, "hrateZB"),
-    hlt_rate = hist_to_value(inf, "hcent_hlt_rate"),
+  float hlt_rate = hist_to_value(inf, "hcent_hlt_rate"),
     hlt_fake = hist_to_value(inf, "hcent_hlt_fake");
-  std::cout<<ZBrate<<std::endl;
 
   TH1F* hcent = (TH1F*)inf->Get("hcent");
   xjjroot::sethempty(hcent);
@@ -45,7 +39,7 @@ int macro(std::string param)
   // leg
   auto lt_And_ZDCAnd = new l1style::legt("HF_AND #bf{&} ZDC_#bf{AND}", 20, 1, l1style::y_down),
     lt_And_ZDCOr = new l1style::legt("HF_AND #bf{&} ZDC_#bf{OR}", 25, 2, l1style::y_up);
-    // lt_Or_ZDCAnd = new l1style::legt("HF_AND #bf{|} ZDC_#bf{AND}", 20, 1, l1style::y_down);
+  // lt_Or_ZDCAnd = new l1style::legt("HF_AND #bf{|} ZDC_#bf{AND}", 20, 1, l1style::y_down);
   auto leg_And_HFOnly = new TLegend(0.22, 0.55-0.0375*l1trigger::ncent, 0.42, 0.55);
   xjjroot::setleg(leg_And_HFOnly, 0.037);
   for (int l=0; l<l1trigger::ncent; l++)
@@ -73,14 +67,31 @@ int macro(std::string param)
   for (int l=0; l<l1trigger::ncent; l++)
     gr_heff_And_HFOnly[l]->Draw("plXe same");
   leg_And_HFOnly->Draw();
-  xjjroot::drawtex(0.23, 0.80, "HF only", 0.035, 12, 62);
+  xjjroot::drawtex(0.23, 0.80, "HF only", 0.038, 12);
   pdf->getc()->RedrawAxis();
   pdf->write();
 
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
-  gr_heff_And_ZDCOr_int[0]->Draw("plXe same");
-  xjjroot::drawtex(0.23, 0.80, "HF only", 0.035, 12, 62);
+  xjjroot::drawline(0, 1, l1trigger::nadc, 1, kBlack, 2, 2);
+  gr_heff_And_ZDCAnd_int[0]->Draw("plXe same");
+  for (int k=l1trigger::nNeus-1; k>=1; k--) {
+    gr_heff_And_ZDCOr_int[k]->Draw("plXe same");
+  }
+  lt_And_ZDCOr->draw();
+  xjjroot::drawtex(0.23, 0.4, "Cent. 0 - 100\%", 0.038, 12);
+  pdf->getc()->RedrawAxis();
+  pdf->write();
+
+  pdf->prepare();
+  drawshadow(hemptyeffadc, 0);
+  xjjroot::drawline(0, 1, l1trigger::nadc, 1, kBlack, 2, 2);
+  gr_heff_And_ZDCAnd_interest[0]->Draw("plXe same");
+  for (int k=l1trigger::nNeus-1; k>=1; k--) {
+    gr_heff_And_ZDCOr_interest[k]->Draw("plXe same");
+  }
+  lt_And_ZDCOr->draw();
+  xjjroot::drawtex(0.23, 0.4, Form("Cent. 0 - %d%s", l1trigger::cent[l1trigger::l_interest+1]/2, "%"), 0.038, 12);
   pdf->getc()->RedrawAxis();
   pdf->write();
 
@@ -92,11 +103,12 @@ int macro(std::string param)
     hZDCdisGeV[j]->Draw("pe same");
     for (int k=1; k<l1trigger::nNeus; k++) {
       float biny = hZDCdisGeV[j]->GetBinContent(hZDCdisGeV[j]->FindBin(l1trigger::mNeuZDCLow[j][k]));
-      xjjroot::drawline(l1trigger::mNeuZDCLow[j][k], hZDCdisGeV[j]->GetMinimum(), 
+      xjjroot::drawline(l1trigger::mNeuZDCLow[j][k], hZDCdisGeV[j]->GetMinimum()/2., 
                         l1trigger::mNeuZDCLow[j][k], biny,
                         l1style::colors[k], 7, 4);
       xjjroot::drawtexnum(l1trigger::mNeuZDCLow[j][k], biny*5, Form("(%dn)", k), 0.038, 22, 62, l1style::colors[k]);
     }
+    xjjroot::drawtex(0.80, 0.80, "Mimic trigger (Ts2 - 0.45#timesTs1)", 0.038, 32);
     pdf->write();
   }
   pdf->getc()->SetLogy(0);
@@ -176,7 +188,7 @@ int macro(std::string param)
   // }
 
   // HFcent_And_ZDCAnd/Or - compare same HF adc
-  for (int a = 14; a<18; a++) {
+  for (int a = 15; a<18; a++) {
     pdf->prepare();
     drawshadow(hemptyeffcent, 0);
     geffcent_And_ZDCAnd[0][a]->Draw("same pl");    
@@ -189,7 +201,8 @@ int macro(std::string param)
   }
 
   // HFcent_And_ZDCAnd/Or - fixed rate
-  for (float prescale : {1., 1.5, 2.0}) {
+  // for (float prescale : {1., 1.25, 1.5}) {
+  for (float prescale : {1.}) {
     pdf->prepare();
     drawshadow(hemptyeffcent, 0);
     for (int k=0; k<l1trigger::nNeus; k++)

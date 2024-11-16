@@ -14,11 +14,9 @@ int macro(std::string param)
 {
   xjjc::config conf(param);
   conf.print();
-  float ZBrate = conf.vf("ZBrate"), nBunchRatio = conf.vf("nBunchRatio");
+  if (l1trigger::setconfig(conf)) return 2;
   int minLS = conf.vi("minLS"), maxLS = conf.vi("maxLS");
-  std::string inputname = conf["Input"], outputdir = conf["Output"], MBhlt = conf["MBhlt"];
-  l1trigger::sethlt(MBhlt);
-  l1trigger::setcent();
+  std::string inputname = conf["Input"], outputdir = conf["Output"];
 
   TFile* inf = TFile::Open(inputname.c_str());
   TTree* tt = (TTree*)inf->Get("mbnt");
@@ -79,7 +77,7 @@ int macro(std::string param)
       for (int k=0; k<l1trigger::nNeus; k++) {
         if (nt->AdcAND > a) {
           if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] && nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
-            // Or_ZDCAnd
+            // And_ZDCAnd
             hrate_And_ZDCAnd[k]->Fill(a);
             if (nt->colEvtSel) {
               heff_And_ZDCAnd[k][icent]->Fill(a);
@@ -121,7 +119,7 @@ int macro(std::string param)
   xjjc::progressbar_summary(nentries);
 
   TH1F* hrateZB = new TH1F("hrateZB", ";L1 HF threshold (ADC);", 1, 0, 1);
-  hrateZB->SetBinContent(1, ZBrate*nBunchRatio);
+  hrateZB->SetBinContent(1, l1trigger::ZBrate*l1trigger::nBunchRatio);
   // fake
   hcent_hlt_fake->Divide(hcent_hlt_rate);
   for (int k=0; k<l1trigger::nNeus; k++) {
@@ -130,7 +128,7 @@ int macro(std::string param)
     hfake_Or_ZDCAnd[k]->Divide(hrate_Or_ZDCAnd[k]);      
   }
   // rate
-  float rate_scale = ZBrate*nBunchRatio/nZB_HLT/1.e+3;
+  float rate_scale = l1trigger::ZBrate*l1trigger::nBunchRatio/nZB_HLT/1.e+3;
   hcent_hlt_rate->Scale(rate_scale);
   for (auto& h : hrate_And_ZDCAnd) h->Scale(rate_scale);
   for (auto& h : hrate_And_ZDCOr) h->Scale(rate_scale);
@@ -138,6 +136,15 @@ int macro(std::string param)
   // efficiency
   hcent_hlt_eff->Sumw2();
   hcent_hlt_eff->Divide(hcent_hlt_effden);
+  for (int l=0; l<l1trigger::ncent; l++) {
+    if (l > l1trigger::l_interest) continue;
+    heffden_interest->Add(heffden[l]);
+    for (int k=0; k<l1trigger::nNeus; k++) {
+      heff_And_ZDCAnd_interest[k]->Add(heff_And_ZDCAnd[k][l]);
+      heff_And_ZDCOr_interest[k]->Add(heff_And_ZDCOr[k][l]);
+      heff_Or_ZDCAnd_interest[k]->Add(heff_Or_ZDCAnd[k][l]);
+    }
+  }
   for (int k=0; k<l1trigger::nNeus; k++) {
     for (int l=0; l<l1trigger::ncent; l++) {
       heff_And_ZDCAnd[k][l]->Sumw2();
@@ -161,34 +168,20 @@ int macro(std::string param)
     heff_And_ZDCOr_int[k]->Divide(heffden_int);
     heff_Or_ZDCAnd_int[k]->Sumw2();
     heff_Or_ZDCAnd_int[k]->Divide(heffden_int);
+    heff_And_ZDCAnd_interest[k]->Sumw2();
+    heff_And_ZDCAnd_interest[k]->Divide(heffden_interest);
+    heff_And_ZDCOr_interest[k]->Sumw2();
+    heff_And_ZDCOr_interest[k]->Divide(heffden_interest);
+    heff_Or_ZDCAnd_interest[k]->Sumw2();
+    heff_Or_ZDCAnd_interest[k]->Divide(heffden_interest);
   }
 
   std::string outputname = "rootfiles/"+outputdir+"/savehist.root";
   xjjroot::mkdir(outputname);
   TFile* outf = new TFile(outputname.c_str(), "recreate");
 
-  for (auto& h : hZDCdisGeV) xjjroot::writehist(h);
-  for (auto& h : hrate_And_ZDCAnd) xjjroot::writehist(h);
-  for (auto& h : hrate_And_ZDCOr) xjjroot::writehist(h);
-  // for (auto& h : hrate_Or_ZDCAnd) xjjroot::writehist(h);
-  for (auto& h : hfake_And_ZDCAnd) xjjroot::writehist(h);
-  for (auto& h : hfake_And_ZDCOr) xjjroot::writehist(h);
-  // for (auto& h : hfake_Or_ZDCAnd) xjjroot::writehist(h);
-  for (auto& h : heff_And_ZDCAnd)
-    for (auto& hh : h) xjjroot::writehist(hh);
-  for (auto& h : heff_And_ZDCOr)
-    for (auto& hh : h) xjjroot::writehist(hh);
-  // for (auto& h : heff_Or_ZDCAnd)
-  //   for (auto& hh : h) xjjroot::writehist(hh);
-  for (auto& h : heffcent_And_ZDCAnd)
-    for (auto& hh : h) xjjroot::writehist(hh);
-  for (auto& h : heffcent_And_ZDCOr)
-    for (auto& hh : h) xjjroot::writehist(hh);
-  // for (auto& h : heffcent_Or_ZDCAnd)
-  //   for (auto& hh : h) xjjroot::writehist(hh);
-  for (auto& h : heff_And_ZDCAnd_int) xjjroot::writehist(h);
-  for (auto& h : heff_And_ZDCOr_int) xjjroot::writehist(h);
-  // for (auto& h : heff_Or_ZDCAnd_int) xjjroot::writehist(h);
+  write_hist();
+
   xjjroot::writehist(hrateZB);
   xjjroot::writehist(hcent);
   xjjroot::writehist(hcent_hlt_rate);
@@ -197,7 +190,7 @@ int macro(std::string param)
   outf->Close();
 
   std::cout<<"ZB count: \e[4m"<<nZB_HLT<<"\e[0m"<<std::endl;
-  std::cout<<"ZB rate (nb ratio = \e[4m"<<nBunchRatio<<"\e[0m): \e[4m"<<ZBrate*nBunchRatio<<"\e[0m"<<std::endl;
+  std::cout<<"ZB rate (nb ratio = \e[4m"<<l1trigger::nBunchRatio<<"\e[0m): \e[4m"<<l1trigger::ZBrate*l1trigger::nBunchRatio<<"\e[0m"<<std::endl;
   std::cout<<"Event sel count: \e[4m"<<ncolEvtSel<<"\e[0m"<<std::endl;
   
   return 0;
