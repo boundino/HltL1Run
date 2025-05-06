@@ -1,7 +1,7 @@
 #ifndef __MAKETREE_H_
 #define __MAKETREE_H_
 
-#include "cent/cent_data_2024.h"
+#include "cent/cent_OO_hijing.h"
 #include "zdc.h"
 #include "../includes/ntbranches.h"
 
@@ -205,7 +205,7 @@ void mbntuplizer::calculate() {
     br.mNtrkoffline = hiNtracks;
     br.mNpixelTracks = hiNpixelTracks;
   }
-  else if (mAdcTree) {
+  else if (mAdcTree) { // if no event tree
     br.mhiHF = hft;
     br.mhiBin = getHiBinFromhiHF(hft);
   }
