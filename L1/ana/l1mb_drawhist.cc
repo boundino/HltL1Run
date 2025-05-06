@@ -11,7 +11,7 @@
 #include "l1mb_constant.h"
 #include "l1mb_helper.h"
 
-float frate = 50;
+float frate = 40;
 
 int macro(std::string param)
 {
@@ -64,6 +64,7 @@ int macro(std::string param)
   // Efficiency vs ADC 
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
+  xjjroot::drawline(l1trigger::Iadc, 0, l1trigger::Iadc, 1, kGray, 2, 2);
   for (int l=0; l<l1trigger::ncent; l++)
     gr_heff_And_HFOnly[l]->Draw("plXe same");
   leg_And_HFOnly->Draw();
@@ -73,24 +74,34 @@ int macro(std::string param)
 
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
+  xjjroot::drawline(l1trigger::Iadc, 0, l1trigger::Iadc, gr_heff_And_ZDCOr_int[l1trigger::nneu]->GetPointY(l1trigger::Iadc), kGray, 2, 2);
   xjjroot::drawline(0, 1, l1trigger::nadc, 1, kBlack, 2, 2);
+  // for (int k=l1trigger::nNeus-1; k>=0; k--)
+  //   gr_heff_And_ZDCAnd_int[k]->Draw("plXe same");
+  // lt_And_ZDCAnd->draw();
   gr_heff_And_ZDCAnd_int[0]->Draw("plXe same");
   for (int k=l1trigger::nNeus-1; k>=1; k--) {
     gr_heff_And_ZDCOr_int[k]->Draw("plXe same");
   }
   lt_And_ZDCOr->draw();
   xjjroot::drawtex(0.23, 0.4, "Cent. 0 - 100\%", 0.038, 12);
+  drawyvalue(gr_heff_And_ZDCOr_int[l1trigger::nneu], hemptyeffadc, l1trigger::Iadc);
   pdf->getc()->RedrawAxis();
   pdf->write();
 
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
+  xjjroot::drawline(l1trigger::Iadc, 0, l1trigger::Iadc, gr_heff_And_ZDCOr_interest[l1trigger::nneu]->GetPointY(l1trigger::Iadc), kGray, 2, 2);
   xjjroot::drawline(0, 1, l1trigger::nadc, 1, kBlack, 2, 2);
+  // for (int k=l1trigger::nNeus-1; k>=0; k--)
+  //   gr_heff_And_ZDCAnd_interest[k]->Draw("plXe same");
+  // lt_And_ZDCAnd->draw();
   gr_heff_And_ZDCAnd_interest[0]->Draw("plXe same");
   for (int k=l1trigger::nNeus-1; k>=1; k--) {
     gr_heff_And_ZDCOr_interest[k]->Draw("plXe same");
   }
   lt_And_ZDCOr->draw();
+  drawyvalue(gr_heff_And_ZDCOr_interest[l1trigger::nneu], hemptyeffadc, l1trigger::Iadc);
   xjjroot::drawtex(0.23, 0.4, Form("Cent. 0 - %d%s", l1trigger::cent[l1trigger::l_interest+1]/2, "%"), 0.038, 12);
   pdf->getc()->RedrawAxis();
   pdf->write();

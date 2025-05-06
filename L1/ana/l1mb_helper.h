@@ -263,6 +263,13 @@ void drawhfth(TGraph* gr, TH2* hempty)
     }
 }
 
+void drawyvalue(TGraph* gr, TH2* hempty, int ibin)
+{
+  double x = gr->GetPointX(ibin), y = gr->GetPointY(ibin);
+  if (x >= hempty->GetXaxis()->GetXmin() && x <= hempty->GetXaxis()->GetXmax())
+    xjjroot::drawtexnum(x, y+(hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/15., Form("%.2f", y), 0.03, 23, 42, gr->GetMarkerColor());  
+}
+
 int nearest(TH1F* h, float frate, bool verbose = false)
 {
   int iresult = -1;
