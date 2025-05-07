@@ -18,6 +18,8 @@ int macro(std::string param)
   int minLS = conf.vi("minLS"), maxLS = conf.vi("maxLS");
   std::string inputname = conf["Input"], outputdir = conf["Output"];
 
+  std::cout<<" [ "<<(l1trigger::ismc?"MC":"data")<<" ]"<<std::endl<<std::endl;
+  
   TFile* inf = TFile::Open(inputname.c_str());
   TTree* tt = (TTree*)inf->Get("mbnt");
   l1trigger::evtl1ntuple* nt = new l1trigger::evtl1ntuple(tt);
@@ -39,11 +41,13 @@ int macro(std::string param)
     xjjc::progressslide(i, nentries, 100000);
     nt->GetEntry(i);
 
-    // select ZB events     
-    if (!nt->HLT_ZB) continue;
-    if (minLS > 0 && nt->br.mLS < minLS) continue;
-    if (maxLS > 0 && nt->br.mLS > maxLS) continue;
-
+    // select ZB events
+    if (!l1trigger::ismc) {
+      if (!nt->HLT_ZB) continue;
+      if (minLS > 0 && nt->br.mLS < minLS) continue;
+      if (maxLS > 0 && nt->br.mLS > maxLS) continue;
+    }
+    
     nZB_HLT++;
       
     int icent = xjjc::findibin<Short_t>(l1trigger::cent, nt->br.mhiBin);
@@ -62,7 +66,7 @@ int macro(std::string param)
         hcent_hlt_fake->Fill(0);
       }
     }
-    if (nt->colEvtSel) {
+    if (l1trigger::ismc || nt->colEvtSel) {
       hcent->Fill(nt->br.mhiBin/2.);
       hcent_hlt_effden->Fill(nt->br.mhiBin);
       ncolEvtSel++;
@@ -70,7 +74,7 @@ int macro(std::string param)
       
     // rate && eff
     for (int a=0; a<l1trigger::nadc; a++) {
-      if (nt->colEvtSel) {
+      if (l1trigger::ismc || nt->colEvtSel) {
         heffden[icent]->Fill(a);
         heffden_int->Fill(a);
       }
@@ -79,7 +83,7 @@ int macro(std::string param)
           if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] && nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
             // And_ZDCAnd
             hrate_And_ZDCAnd[k]->Fill(a);
-            if (nt->colEvtSel) {
+            if (l1trigger::ismc || nt->colEvtSel) {
               heff_And_ZDCAnd[k][icent]->Fill(a);
               heff_And_ZDCAnd_int[k]->Fill(a);
               heffcent_And_ZDCAnd[k][a]->Fill(nt->br.mhiBin/2.);
@@ -91,7 +95,7 @@ int macro(std::string param)
           if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] || nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
             // And_ZDCOr
             hrate_And_ZDCOr[k]->Fill(a);
-            if (nt->colEvtSel) {
+            if (l1trigger::ismc || nt->colEvtSel) {
               heff_And_ZDCOr[k][icent]->Fill(a);
               heff_And_ZDCOr_int[k]->Fill(a);
               heffcent_And_ZDCOr[k][a]->Fill(nt->br.mhiBin/2.);
@@ -101,18 +105,32 @@ int macro(std::string param)
             }
           }
         } // if (nt->AdcAND > a) {
-        if (nt->AdcAND > a || (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] && nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k])) {
-          // Or_ZDCAnd
-          hrate_Or_ZDCAnd[k]->Fill(a);
-          if (nt->colEvtSel) {
-            heff_Or_ZDCAnd[k][icent]->Fill(a);
-            heff_Or_ZDCAnd_int[k]->Fill(a);
-            heffcent_Or_ZDCAnd[k][a]->Fill(nt->br.mhiBin/2.);
+        if (nt->AdcOR > a) {
+          if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] && nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
+            // Or_ZDCAnd
+            hrate_Or_ZDCAnd[k]->Fill(a);
+            if (l1trigger::ismc || nt->colEvtSel) {
+              heff_Or_ZDCAnd[k][icent]->Fill(a);
+              heff_Or_ZDCAnd_int[k]->Fill(a);
+              heffcent_Or_ZDCAnd[k][a]->Fill(nt->br.mhiBin/2.);
+            }
+            else {
+              hfake_Or_ZDCAnd[k]->Fill(a);
+            }
+          }          
+          if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] || nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
+            // Or_ZDCOr
+            hrate_Or_ZDCOr[k]->Fill(a);
+            if (l1trigger::ismc || nt->colEvtSel) {
+              heff_Or_ZDCOr[k][icent]->Fill(a);
+              heff_Or_ZDCOr_int[k]->Fill(a);
+              heffcent_Or_ZDCOr[k][a]->Fill(nt->br.mhiBin/2.);
+            }
+            else {
+              hfake_Or_ZDCOr[k]->Fill(a);
+            }
           }
-          else {
-            hfake_Or_ZDCAnd[k]->Fill(a);
-          }
-        }
+        } // if (nt->AdcOR > a) {
       } // for (int k=0; k<l1trigger::nNeus; k++) {
     } //  for (int a=0; a<l1trigger::nadc; a++) {
   }
@@ -126,6 +144,7 @@ int macro(std::string param)
     hfake_And_ZDCAnd[k]->Divide(hrate_And_ZDCAnd[k]);
     hfake_And_ZDCOr[k]->Divide(hrate_And_ZDCOr[k]);      
     hfake_Or_ZDCAnd[k]->Divide(hrate_Or_ZDCAnd[k]);      
+    hfake_Or_ZDCOr[k]->Divide(hrate_Or_ZDCOr[k]);      
   }
   // rate
   float rate_scale = l1trigger::ZBrate*l1trigger::nBunchRatio/nZB_HLT/1.e+3;
@@ -133,6 +152,7 @@ int macro(std::string param)
   for (auto& h : hrate_And_ZDCAnd) h->Scale(rate_scale);
   for (auto& h : hrate_And_ZDCOr) h->Scale(rate_scale);
   for (auto& h : hrate_Or_ZDCAnd) h->Scale(rate_scale);
+  for (auto& h : hrate_Or_ZDCOr) h->Scale(rate_scale);
   // efficiency
   hcent_hlt_eff->Sumw2();
   hcent_hlt_eff->Divide(hcent_hlt_effden);
@@ -143,6 +163,7 @@ int macro(std::string param)
       heff_And_ZDCAnd_interest[k]->Add(heff_And_ZDCAnd[k][l]);
       heff_And_ZDCOr_interest[k]->Add(heff_And_ZDCOr[k][l]);
       heff_Or_ZDCAnd_interest[k]->Add(heff_Or_ZDCAnd[k][l]);
+      heff_Or_ZDCOr_interest[k]->Add(heff_Or_ZDCOr[k][l]);
     }
   }
   for (int k=0; k<l1trigger::nNeus; k++) {
@@ -153,6 +174,8 @@ int macro(std::string param)
       heff_And_ZDCOr[k][l]->Divide(heffden[l]);
       heff_Or_ZDCAnd[k][l]->Sumw2();
       heff_Or_ZDCAnd[k][l]->Divide(heffden[l]);
+      heff_Or_ZDCOr[k][l]->Sumw2();
+      heff_Or_ZDCOr[k][l]->Divide(heffden[l]);
     }
     for (int a=0; a<l1trigger::nadc; a++) {
       heffcent_And_ZDCAnd[k][a]->Sumw2();
@@ -161,6 +184,8 @@ int macro(std::string param)
       heffcent_And_ZDCOr[k][a]->Divide(hcent);
       heffcent_Or_ZDCAnd[k][a]->Sumw2();
       heffcent_Or_ZDCAnd[k][a]->Divide(hcent);
+      heffcent_Or_ZDCOr[k][a]->Sumw2();
+      heffcent_Or_ZDCOr[k][a]->Divide(hcent);
     }
     heff_And_ZDCAnd_int[k]->Sumw2();
     heff_And_ZDCAnd_int[k]->Divide(heffden_int);
@@ -168,12 +193,16 @@ int macro(std::string param)
     heff_And_ZDCOr_int[k]->Divide(heffden_int);
     heff_Or_ZDCAnd_int[k]->Sumw2();
     heff_Or_ZDCAnd_int[k]->Divide(heffden_int);
+    heff_Or_ZDCOr_int[k]->Sumw2();
+    heff_Or_ZDCOr_int[k]->Divide(heffden_int);
     heff_And_ZDCAnd_interest[k]->Sumw2();
     heff_And_ZDCAnd_interest[k]->Divide(heffden_interest);
     heff_And_ZDCOr_interest[k]->Sumw2();
     heff_And_ZDCOr_interest[k]->Divide(heffden_interest);
     heff_Or_ZDCAnd_interest[k]->Sumw2();
     heff_Or_ZDCAnd_interest[k]->Divide(heffden_interest);
+    heff_Or_ZDCOr_interest[k]->Sumw2();
+    heff_Or_ZDCOr_interest[k]->Divide(heffden_interest);
   }
 
   std::string outputname = "rootfiles/"+outputdir+"/savehist.root";

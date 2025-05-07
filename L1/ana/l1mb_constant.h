@@ -21,8 +21,9 @@ namespace l1trigger
      // {-1.e10, 1.6e3, 1.92e3, 2.08e3}
     };
   int MBindex = -1, nneu = 0, drawhlt = 0, Iadc = 16;
+  bool ismc = false;
   float ZBrate = 1, nBunchRatio = 1, rate_min = 0, rate_max = 50;
-  std::string tag = "", subtag = "";
+  std::string cmstag = xjjroot::CMS::internal, tag = "", subtag = "";
   int setconfig(xjjc::config conf) {
     // hlt
     if (conf.goodkey("MBhlt")) {
@@ -73,7 +74,8 @@ namespace l1trigger
     // Tag
     if (conf.goodkey("Tag")) { tag = conf["Tag"]; }
     if (conf.goodkey("SubTag")) { tag = conf["SubTag"]; }
-    
+    // MC
+    if (conf.goodkey("MC")) { ismc = true; cmstag = xjjroot::CMS::simulation; }
     return 0;
   }
 
