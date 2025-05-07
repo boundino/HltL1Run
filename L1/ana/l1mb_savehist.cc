@@ -18,7 +18,7 @@ int macro(std::string param)
   int minLS = conf.vi("minLS"), maxLS = conf.vi("maxLS");
   std::string inputname = conf["Input"], outputdir = conf["Output"];
 
-  std::cout<<" [ "<<(l1trigger::ismc?"MC":"data")<<" ]"<<std::endl<<std::endl;
+  std::cout<<std::endl<<"  [ "<<(l1trigger::ismc?"MC":"data")<<" ]"<<std::endl<<std::endl;
   
   TFile* inf = TFile::Open(inputname.c_str());
   TTree* tt = (TTree*)inf->Get("mbnt");

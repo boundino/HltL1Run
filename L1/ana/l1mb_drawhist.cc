@@ -186,10 +186,13 @@ int macro(std::string param)
   pdf->getc()->SetLogy(0);
   pdf->prepare();
   hcent->SetMinimum(0);
+  hcent->SetMaximum(hcent->GetMaximum()*1.8);
   drawshadow(hcent, 0);
   // xjjroot::drawbox(85, hcent->GetMinimum(), 100, hcent->GetMaximum());
   hcent->Draw("hist e same");
-  xjjroot::drawtex(0.24, 0.85, "Applied Offline Event Selection", 0.038, 13);
+  if (!l1trigger::ismc) {
+    xjjroot::drawtex(0.24, 0.85, "Applied Offline Event Selection", 0.038, 13);
+  }
   pdf->getc()->RedrawAxis();
   pdf->write();
 
