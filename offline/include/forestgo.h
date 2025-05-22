@@ -31,6 +31,11 @@ private:
   TTree *tevt, *tskim, *tadc, *tpf;
   int nentries;
 
+  void setbranchaddress(TTree* nt, const char* bname, void* addr) {
+    nt->SetBranchStatus(bname, 1);
+    nt->SetBranchAddress(bname, addr);
+  }
+
   void print(std::string name, bool good);
 };
 
@@ -42,9 +47,10 @@ forestgo::forestgo(TFile* inf) :
   tevt = (TTree*)inf->Get("hiEvtAnalyzer/HiTree");
   print("hiEvtAnalyzer/HiTree", tevt);
   if (tevt) {
-    tevt->SetBranchAddress("Npart", &Npart);
-    tevt->SetBranchAddress("hiHF", &hiHF);
-    tevt->SetBranchAddress("hiHF_pf", &hiHF_pf);
+    tevt->SetBranchStatus("*", 0);
+    setbranchaddress(tevt, "Npart", &Npart);
+    setbranchaddress(tevt, "hiHF", &hiHF);
+    setbranchaddress(tevt, "hiHF_pf", &hiHF_pf);
 
     if (tevt->GetEntries() < nentries || nentries == 0) {
       nentries = tevt->GetEntries();
@@ -53,14 +59,15 @@ forestgo::forestgo(TFile* inf) :
 
   tskim = (TTree*)inf->Get("skimanalysis/HltTree");
   print("skimanalysis/HltTree", tskim);
-  if (tskim) {
-    tskim->SetBranchAddress("pclusterCompatibilityFilter", &pclusterCompatibilityFilter);
-    tskim->SetBranchAddress("pprimaryVertexFilter", &pprimaryVertexFilter);
+  if (tskim) { 
+    tskim->SetBranchStatus("*", 0);
+    setbranchaddress(tskim, "pclusterCompatibilityFilter", &pclusterCompatibilityFilter);
+    setbranchaddress(tskim, "pprimaryVertexFilter", &pprimaryVertexFilter);
     for (int i=MIN_NHFTOWER; i<MAX_NHFTOWER+1; i++) {
       for (int j=MIN_HFTOWERE; j<MAX_HFTOWERE+1; j++) {
         auto key = Form("%dTh%d", i, j);
         pphfCoincFilterPF[key] = 0;
-        tskim->SetBranchAddress(Form("pphfCoincFilterPF%s", key), &pphfCoincFilterPF[key]);
+        setbranchaddress(tskim, Form("pphfCoincFilterPF%s", key), &pphfCoincFilterPF[key]);
       }
     }
     
@@ -72,8 +79,9 @@ forestgo::forestgo(TFile* inf) :
   tadc = (TTree*)inf->Get("HFAdcana/adc");
   print("HFAdcana/adc", tadc);
   if (tadc) {
-    tadc->SetBranchAddress("mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus);
-    tadc->SetBranchAddress("mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus);
+    tadc->SetBranchStatus("*", 0);
+    setbranchaddress(tadc, "mMaxL1HFAdcPlus", &mMaxL1HFAdcPlus);
+    setbranchaddress(tadc, "mMaxL1HFAdcMinus", &mMaxL1HFAdcMinus);
 
     if (tadc->GetEntries() < nentries || nentries == 0) {
       nentries = tadc->GetEntries();
@@ -83,13 +91,14 @@ forestgo::forestgo(TFile* inf) :
   tpf = (TTree*)inf->Get("particleFlowAnalyser/pftree");
   print("particleFlowAnalyser/pftree", tpf);
   if (tpf) {
-    tpf->SetBranchAddress("nPF", &nPF);
+    tpf->SetBranchStatus("*", 0);
+    setbranchaddress(tpf, "nPF", &nPF);
     pfId = 0;
-    tpf->SetBranchAddress("pfId", &pfId);
+    setbranchaddress(tpf, "pfId", &pfId);
     pfEta = 0;
-    tpf->SetBranchAddress("pfEta", &pfEta);
+    setbranchaddress(tpf, "pfEta", &pfEta);
     pfE = 0;
-    tpf->SetBranchAddress("pfE", &pfE);
+    setbranchaddress(tpf, "pfE", &pfE);
 
     if (tpf->GetEntries() < nentries || nentries == 0) {
       nentries = tpf->GetEntries();

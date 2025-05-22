@@ -136,7 +136,7 @@ int macro(std::string conFig) {
   auto n = inputs.size();
   std::cout<<std::endl;
   std::vector<Output> hists;
-  auto leg = new TLegend(0.55, 0.86-(n+1)*0.046, 0.82, 0.86-0.046);
+  auto leg = new TLegend(0.54, 0.86-(n+1)*0.046, 0.80, 0.86-0.046);
   xjjroot::setleg(leg, 0.04);
 
   for (int ih=0; ih < n; ih++) {
@@ -241,7 +241,7 @@ int macro(std::string conFig) {
   }
   auto ghiHFpf__selHF = roc(rhiHFpf__selHF, "hiHFpf__selHF");
   xjjroot::setthgrstyle(ghiHFpf__selHF, kBlack, 20, 1.2, kBlack, 1, 1);
-  auto hempty__roc = new TH2F("hempty__roc", ";Efficiency;Purity", 10, 0.6, 1, 10, 0.6, 1.2);
+  auto hempty__roc = new TH2F("hempty__roc", ";Efficiency;Purity", 10, 0.6, 1, 10, 0.8, 1.05);
   xjjroot::sethempty(hempty__roc);
   
   xjjroot::setgstyle(1);
