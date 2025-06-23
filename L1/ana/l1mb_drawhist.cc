@@ -47,7 +47,7 @@ int macro(std::string param)
   auto lt_And_ZDCAnd = new l1style::legt(titles[0], 20, 1, l1style::y_down),
     lt_And_ZDCOr = new l1style::legt(titles[1], 24, 2, l1style::y_up),
     lt_Or_ZDCAnd = new l1style::legt(titles[2], 21, 1, l1style::y_down),
-    lt_Or_ZDCOr = new l1style::legt(titles[3], 25, 2, l1style::y_up);
+    lt_Or_ZDCOr = new l1style::legt(titles[3], 25, 2, l1style::y_down);
   auto leg_HFOnly = new TLegend(0.22, 0.55-0.0375*l1trigger::ncent, 0.42, 0.55);
   xjjroot::setleg(leg_HFOnly, 0.037);
   for (int l=0; l<l1trigger::ncent; l++)
@@ -206,10 +206,10 @@ int macro(std::string param)
       for (int k=l1trigger::nNeus-1; k>=0; k--) {
         groc_And_ZDCOr[k][l]->Draw("same pl");
         drawhfth(groc_And_ZDCOr[k][l], hempty);
-        // groc_And_ZDCAnd[k][l]->Draw("same pl");
+        groc_Or_ZDCOr[k][l]->Draw("same pl");
         // drawhfth(groc_And_ZDCAnd[k][l], hempty);
       }
-      // lt_And_ZDCAnd->draw();
+      lt_Or_ZDCOr->draw();
       lt_And_ZDCOr->draw();
       if (l1trigger::drawhlt) {
         xjjroot::drawpoint(hlt_rate, hcent_hlt_eff->GetBinContent(l+1), l1style::colors[l1trigger::nneu], 47, 2.0);
@@ -292,6 +292,22 @@ int macro(std::string param)
     pdf->getc()->RedrawAxis();
     pdf->write();
   }
+
+  pdf->prepare();
+  drawshadow(hemptyeffcent, 0);
+  for (int k=0; k<l1trigger::nNeus; k++)
+    {
+      int aAnd = 0,
+        aOr = 0;
+      geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
+      geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
+    }
+  lt_And_ZDCAnd->draw();
+  lt_And_ZDCOr->draw();
+  xjjroot::drawtex(0.23, 0.30, "No HF selection", 0.038, 12);
+  xjjroot::drawtex(0.23, 0.35, "ZDC only", 0.035, 12, 62);
+  pdf->getc()->RedrawAxis();
+  pdf->write();
 
   // --> Individuals (only HF and 2n)
   // auto leg_ind1 = new TLegend(0.24, 0.80, 0.87, 0.85);
