@@ -61,7 +61,7 @@ int macro(std::string param)
 {
   xjjc::config conf(param);
   conf.print();
-  std::string inputname = conf["Input"], outputdir = conf["Output"];
+  std::string inputname = conf["Input_adcToGeV"], outputdir = conf["Output"];
   auto tag = conf["Tag"];
 
   hfmax hf;
