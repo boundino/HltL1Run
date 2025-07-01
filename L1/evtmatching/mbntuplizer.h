@@ -1,7 +1,7 @@
 #ifndef __MAKETREE_H_
 #define __MAKETREE_H_
 
-#include "cent/cent_OO_hijing.h"
+#include "cent/cent_data_2024.h"
 #include "zdc.h"
 #include "../includes/ntbranches.h"
 
@@ -25,12 +25,13 @@ private:
   UInt_t lumi;
   ULong64_t evt;
   int hiBin;
-  float hiHF;
+  float hiHF_pf;
+  float hiHFPlus_pf;
+  float hiHFMinus_pf;
   float vz;
   int hiNpix, hiNtracks, hiNpixelTracks;
 
   // mSkimTree
-  int pphfCoincFilter2Th4;
   int pphfCoincFilterPF2Th4;
   int pphfCoincFilterPF2Th5;
   int pphfCoincFilterPF2Th6;
@@ -65,6 +66,8 @@ private:
   int nhfp;
   int nhfn;
   float hft;
+  float hftp;
+  float hftm;
 
   // mHltTree
   int hlt[MAX_HLT];
@@ -109,7 +112,9 @@ void mbntuplizer::setbranches() {
     mHiEvtTree->SetBranchAddress("lumi", &lumi);
     mHiEvtTree->SetBranchAddress("evt", &evt);
     mHiEvtTree->SetBranchAddress("hiBin", &hiBin);
-    mHiEvtTree->SetBranchAddress("hiHF", &hiHF);
+    mHiEvtTree->SetBranchAddress("hiHF_pf", &hiHF_pf);
+    mHiEvtTree->SetBranchAddress("hiHFPlus_pf", &hiHFPlus_pf);
+    mHiEvtTree->SetBranchAddress("hiHFMinus_pf", &hiHFMinus_pf);
     mHiEvtTree->SetBranchAddress("vz", &vz);
     mHiEvtTree->SetBranchAddress("hiNpix", &hiNpix);
     mHiEvtTree->SetBranchAddress("hiNtracks", &hiNtracks);
@@ -122,7 +127,6 @@ void mbntuplizer::setbranches() {
     std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mSkimTree\e[0m"<<std::endl;
     mSkimTree->SetBranchAddress("pprimaryVertexFilter", &pprimaryVertexFilter);
     mSkimTree->SetBranchAddress("pclusterCompatibilityFilter", &pclusterCompatibilityFilter);
-    mSkimTree->SetBranchAddress("pphfCoincFilter2Th4", &pphfCoincFilter2Th4);
     mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th4", &pphfCoincFilterPF2Th4);
     mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th5", &pphfCoincFilterPF2Th5);
     mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th6", &pphfCoincFilterPF2Th6);
@@ -198,15 +202,19 @@ void mbntuplizer::calculate() {
     br.mRun = run;
     br.mLS = lumi;
     br.mEvent = evt;
-    br.mhiHF = hiHF;
+    br.mhiHF = hiHF_pf;
+    br.mhiHFPlus = hiHFPlus_pf;
+    br.mhiHFMinus = hiHFMinus_pf;
     // br.mhiBin = hiBin;
-    br.mhiBin = getHiBinFromhiHF(hiHF);
+    br.mhiBin = getHiBinFromhiHF(hiHF_pf);
     br.mNpixel = hiNpix;
     br.mNtrkoffline = hiNtracks;
     br.mNpixelTracks = hiNpixelTracks;
   }
   else if (mAdcTree) { // if no event tree
     br.mhiHF = hft;
+    br.mhiHFPlus = hftp;
+    br.mhiHFMinus = hftm;
     br.mhiBin = getHiBinFromhiHF(hft);
   }
   
@@ -230,7 +238,6 @@ void mbntuplizer::calculate() {
   if (mSkimTree) {
     br.mpprimaryVertexFilter = pprimaryVertexFilter;
     br.mpclusterCompatibilityFilter = pclusterCompatibilityFilter;
-    br.mpphfCoincFilter2Th4 = pphfCoincFilter2Th4;
     br.mpphfCoincFilterPF2Th4 = pphfCoincFilterPF2Th4;
     br.mpphfCoincFilterPF2Th5 = pphfCoincFilterPF2Th5;
     br.mpphfCoincFilterPF2Th6 = pphfCoincFilterPF2Th6;
@@ -239,7 +246,7 @@ void mbntuplizer::calculate() {
     br.mpphfCoincFilterPF2Th9 = pphfCoincFilterPF2Th9;
   }
   else if (mAdcTree) {
-    br.mpphfCoincFilter2Th4 = nhfp > 1 && nhfn > 1;
+    br.mpphfCoincFilterPF2Th4 = nhfp > 1 && nhfn > 1;
   }
   // br.mEvtSel[0] = br.mEvtSel[1] && br.mEvtSel[2] && br.mEvtSel[3];
 

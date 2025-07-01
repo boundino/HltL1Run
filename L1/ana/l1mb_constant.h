@@ -23,7 +23,7 @@ namespace l1trigger
   int MBindex = -1, nneu = 0, drawhlt = 0, Iadc = 16;
   bool ismc = false;
   float ZBrate = 1, nBunchRatio = 1, rate_min = 0, rate_max = 50;
-  std::string cmstag = xjjroot::CMS::internal, tag = "", subtag = "";
+  std::string cmstag = xjjroot::CMS::preliminary, tag = "", subtag = "";
   int setconfig(xjjc::config conf) {
     // hlt
     if (conf.goodkey("MBhlt")) {

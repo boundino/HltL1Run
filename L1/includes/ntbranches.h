@@ -9,6 +9,8 @@ struct ntbranches {
   unsigned int mLS;
   unsigned int mEvent;
   float        mhiHF;
+  float        mhiHFPlus;
+  float        mhiHFMinus;
   short        mhiBin;
   float        mzdcsumPlus, mzdcsumMinus;
   int          mMaxL1HFAdcPlus, mMaxL1HFAdcMinus;
@@ -19,7 +21,6 @@ struct ntbranches {
   int          mTrigHLT[MAX_HLT];
   int          mpprimaryVertexFilter;
   int          mpclusterCompatibilityFilter;
-  int          mpphfCoincFilter2Th4;
   int          mpphfCoincFilterPF2Th4;
   int          mpphfCoincFilterPF2Th5;
   int          mpphfCoincFilterPF2Th6;
@@ -33,6 +34,8 @@ void nt_branch(TTree* t, ntbranches& br) {
   t->Branch("mLS", &br.mLS, "mLS/i");
   t->Branch("mEvent", &br.mEvent, "mEvent/i");
   t->Branch("mhiHF", &br.mhiHF, "mhiHF/F");
+  t->Branch("mhiHFPlus", &br.mhiHFPlus, "mhiHFPlus/F");
+  t->Branch("mhiHFMinus", &br.mhiHFMinus, "mhiHFMinus/F");
   t->Branch("mhiBin", &br.mhiBin, "mhiBin/S");
   t->Branch("mzdcsumPlus", &br.mzdcsumPlus, "mzdcsumPlus/F");
   t->Branch("mzdcsumMinus", &br.mzdcsumMinus, "mzdcsumMinus/F");
@@ -49,7 +52,6 @@ void nt_branch(TTree* t, ntbranches& br) {
   t->Branch("mNpixelTracks", &br.mNpixelTracks, "mNpixelTracks/I");
   t->Branch("mpprimaryVertexFilter", &br.mpprimaryVertexFilter, "mpprimaryVertexFilter/I");
   t->Branch("mpclusterCompatibilityFilter", &br.mpclusterCompatibilityFilter, "mpclusterCompatibilityFilter/I");
-  t->Branch("mpphfCoincFilter2Th4", &br.mpphfCoincFilter2Th4, "mpphfCoincFilter2Th4/I");
   t->Branch("mpphfCoincFilterPF2Th4", &br.mpphfCoincFilterPF2Th4, "mpphfCoincFilterPF2Th4/I");
   t->Branch("mpphfCoincFilterPF2Th5", &br.mpphfCoincFilterPF2Th5, "mpphfCoincFilterPF2Th5/I");
   t->Branch("mpphfCoincFilterPF2Th6", &br.mpphfCoincFilterPF2Th6, "mpphfCoincFilterPF2Th6/I");
@@ -81,7 +83,6 @@ void nt_setbranchaddress(TTree* t, ntbranches& br) {
   t->SetBranchAddress("mNpixelTracks", &br.mNpixelTracks);
   t->SetBranchAddress("mpprimaryVertexFilter", &br.mpprimaryVertexFilter);
   t->SetBranchAddress("mpclusterCompatibilityFilter", &br.mpclusterCompatibilityFilter);
-  t->SetBranchAddress("mpphfCoincFilter2Th4", &br.mpphfCoincFilter2Th4);
   t->SetBranchAddress("mpphfCoincFilterPF2Th4", &br.mpphfCoincFilterPF2Th4);
   t->SetBranchAddress("mpphfCoincFilterPF2Th5", &br.mpphfCoincFilterPF2Th5);
   t->SetBranchAddress("mpphfCoincFilterPF2Th6", &br.mpphfCoincFilterPF2Th6);
@@ -113,7 +114,6 @@ void nt_cleanbranch(ntbranches& br) {
   br.mNpixelTracks = -1;
   br.mpprimaryVertexFilter = true;
   br.mpclusterCompatibilityFilter = true;
-  br.mpphfCoincFilter2Th4 = true;
   br.mpphfCoincFilterPF2Th4 = true;
   br.mpphfCoincFilterPF2Th5 = true;
   br.mpphfCoincFilterPF2Th6 = true;

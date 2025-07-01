@@ -11,20 +11,20 @@
 
 int evtmatching(std::string inf, std::string outfile, int nentries = -1) {
   
-  TFile* inff = TFile::Open(inf.c_str());
+  auto inff = TFile::Open(inf.c_str());
 
-  TTree* hiroot = (TTree*)inff->Get("hiEvtAnalyzer/HiTree");
-  TTree* skimroot = (TTree*)inff->Get("skimanalysis/HltTree");
-  TTree* zdcdigiroot = (TTree*)inff->Get("zdcanalyzer/zdcdigi");
-  TTree* zdcrechitroot = (TTree*)inff->Get("zdcanalyzer/zdcrechit");
-  TTree* hltroot = (TTree*)inff->Get("hltanalysis/HltTree");
-  TTree* l1ADC = (TTree*)inff->Get("HFAdcana/adc");
+  auto hiroot = (TTree*)inff->Get("hiEvtAnalyzer/HiTree");
+  auto skimroot = (TTree*)inff->Get("skimanalysis/HltTree");
+  auto zdcdigiroot = (TTree*)inff->Get("zdcanalyzer/zdcdigi");
+  auto zdcrechitroot = (TTree*)inff->Get("zdcanalyzer/zdcrechit");
+  auto hltroot = (TTree*)inff->Get("hltanalysis/HltTree");
+  auto l1ADC = (TTree*)inff->Get("HFAdcana/adc");
 
-  TFile* outf = new TFile(outfile.c_str(), "recreate");
-  mbntuplizer* nt = new mbntuplizer(l1ADC, hiroot, skimroot, zdcrechitroot, zdcdigiroot, hltroot);
+  auto outf = new TFile(outfile.c_str(), "recreate");
+  auto nt = new mbntuplizer(l1ADC, hiroot, skimroot, zdcrechitroot, zdcdigiroot, hltroot);
 
   int entries = (nentries>0&&nentries<l1ADC->GetEntries())?nentries:l1ADC->GetEntries();
-  for(Long64_t j = 0; j<entries; j++) {
+  for(int j = 0; j<entries; j++) {
     
     xjjc::progressslide(j, entries, 10000);
 

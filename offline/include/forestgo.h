@@ -9,6 +9,7 @@ public:
   forestgo(TFile* inf);
 
   float Npart;
+  float vz;
   float hiHF;
   float hiHF_pf;
 
@@ -40,7 +41,7 @@ private:
 };
 
 forestgo::forestgo(TFile* inf) :
-  tskim(0), tevt(0), tadc(0) {
+  tskim(0), tevt(0), tadc(0), tpf(0) {
 
   nentries = 0;
   
@@ -49,6 +50,7 @@ forestgo::forestgo(TFile* inf) :
   if (tevt) {
     tevt->SetBranchStatus("*", 0);
     setbranchaddress(tevt, "Npart", &Npart);
+    setbranchaddress(tevt, "vz", &vz);
     setbranchaddress(tevt, "hiHF", &hiHF);
     setbranchaddress(tevt, "hiHF_pf", &hiHF_pf);
 

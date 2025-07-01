@@ -44,6 +44,7 @@ namespace l1style {
 
 // common h
 std::vector<TH1F*> hZDCdisGeV(l1trigger::nDirs, 0);
+std::vector<TH2F*> hZDC_HF(l1trigger::nDirs, 0);
 std::vector<TH1F*> hrate_And_ZDCAnd(l1trigger::nNeus, 0), hfake_And_ZDCAnd(l1trigger::nNeus, 0),
   hrate_And_ZDCOr(l1trigger::nNeus, 0), hfake_And_ZDCOr(l1trigger::nNeus, 0),
   hrate_Or_ZDCAnd(l1trigger::nNeus, 0), hfake_Or_ZDCAnd(l1trigger::nNeus, 0),
@@ -66,6 +67,7 @@ TH1F *heffden_int, *heffden_interest;
 void create_hist() {
   for (int j=0; j<l1trigger::nDirs; j++) {
     hZDCdisGeV[j] = new TH1F(Form("hZDCdisGeV%s", l1trigger::mDir[j].c_str()), Form(";ZDC %s (GeV);Entries", l1trigger::mDir[j].c_str()), 500, 0, 1.2e+4);
+    hZDC_HF[j] = new TH2F(Form("hZDC_HF%s", l1trigger::mDir[j].c_str()), Form(";HF %s E_{T} Sum (GeV);ZDC %s (GeV)", l1trigger::mDir[j].c_str()), 100, 0, 10000, 100, 0, 1.2e+4);
   }
   for (int k=0; k<l1trigger::nNeus; k++) {
     hrate_And_ZDCAnd[k] = new TH1F(Form("hrate_And_ZDCAnd_%dn", k), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc);
@@ -110,6 +112,10 @@ void read_hist(TFile* inf) {
     hZDCdisGeV[j]->GetXaxis()->SetMaxDigits(3);
     xjjroot::sethempty(hZDCdisGeV[j]);
     xjjroot::setthgrstyle(hZDCdisGeV[j], kBlack, 20, 0.9, kBlack, 1, 1);
+    hZDC_HF[j] = (TH2F*)inf->Get(Form("hZDC_HF%s", l1trigger::mDir[j].c_str()));
+    hZDC_HF[j]->GetXaxis()->SetMaxDigits(3);
+    xjjroot::sethempty(hZDC_HF[j]);
+    xjjroot::setthgrstyle(hZDC_HF[j], kBlack, 20, 0.9, kBlack, 1, 1);
   }
   for (int k=0; k<l1trigger::nNeus; k++) {
     hrate_And_ZDCAnd[k] = (TH1F*)inf->Get(Form("hrate_And_ZDCAnd_%dn", k));
@@ -240,6 +246,7 @@ void make_gr() {
 // write
 void write_hist() {
   for (auto& h : hZDCdisGeV) xjjroot::writehist(h);
+  for (auto& h : hZDC_HF) xjjroot::writehist(h);
   for (auto& h : hrate_And_ZDCAnd) xjjroot::writehist(h);
   for (auto& h : hrate_And_ZDCOr) xjjroot::writehist(h);
   for (auto& h : hrate_Or_ZDCAnd) xjjroot::writehist(h);
