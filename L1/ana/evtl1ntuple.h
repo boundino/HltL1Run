@@ -37,8 +37,8 @@ l1trigger::evtl1ntuple::evtl1ntuple(TTree* nt_) : fnt(nt_) {
 
 void l1trigger::evtl1ntuple::morecalculation() {
   HLT_ZB                     = br.mTrigHLT[0];
-  colEvtSel                  = (bool)(br.mpphfCoincFilterPF2Th7 && br.mpprimaryVertexFilter && br.mpclusterCompatibilityFilter);
-  // colEvtSel                  = (bool)(br.mpprimaryVertexFilter && br.mpclusterCompatibilityFilter);
+  // colEvtSel                  = (bool)(br.mpphfCoincFilterPF2Th7 && br.mpprimaryVertexFilter && br.mpclusterCompatibilityFilter);
+  colEvtSel                  = (bool)(br.mpprimaryVertexFilter && br.mpclusterCompatibilityFilter);
 
   ZDCplus = br.mzdcsumPlus;
   ZDCminus = br.mzdcsumMinus;

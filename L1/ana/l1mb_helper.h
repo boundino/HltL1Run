@@ -313,13 +313,13 @@ void drawgrval(TGraph* gr, TH2* hempty, bool val = true)
       }
 }
 
-void drawhfth(TGraph* gr, TH2* hempty)
+void drawhfth(TGraph* gr, TH2* hempty, float dev=1./40)
 {
   for(int i=0; i<gr->GetN(); i++)
     {
       double x = gr->GetPointX(i), y = gr->GetPointY(i);
       if (x >= hempty->GetXaxis()->GetXmin() && x <= hempty->GetXaxis()->GetXmax())
-        xjjroot::drawtexnum(x, y+(hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20., Form("%d", i), 0.03, 23, 42, gr->GetMarkerColor());
+        xjjroot::drawtexnum(x, y+(hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())*dev, Form("%d", i), 0.03, (dev>0?21:23), 42, gr->GetMarkerColor());
     }
 }
 
