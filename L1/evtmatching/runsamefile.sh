@@ -9,6 +9,11 @@ echo -e "\033[1m$centrality\033[0m"
 
 make evtmatch_samefile || exit 1
 
+mkdir -p list
+outputdir=/eos/cms/store/group/phys_heavyions/wangj/Forest2025
+
+[[ $# -eq 1 ]] || exit 2
+
 [[ $1 == *crab_*.root && -f $1 ]] && {
 
     FOREST=$1
@@ -21,4 +26,13 @@ make evtmatch_samefile || exit 1
     # tmp=$(date +%y%m%d%H%M%S)
     # rm evtmatch_samefile_${tmp}
 
+} || {
+    DIRE=$1
+    tag=${DIRE%%crab_*}
+    tag=${DIRE/$tag/}
+    tag=${tag%%/*}
+    echo "$tag"
+    
+    ls --color=no -d $DIRE/* > list/$tag.txt
+    ./evtmatch_samefile list/$tag.txt $outputdir/${tag/crab_/evtmatching_}.root
 }

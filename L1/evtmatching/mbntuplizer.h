@@ -7,14 +7,18 @@
 
 #define MAX_DIGI 56
 
+const std::vector<std::string> prehltpaths = {"HLT_OxyZeroBias_v1", "HLT_MinimumBiasHF_OR_BptxAND_v1", "HLT_MinimumBiasHF_AND_BptxAND_v1", "HLT_OxyZDC1nOR_v1"};
 class mbntuplizer
 {
 public:
   mbntuplizer(TTree* AdcTree, TTree* HiEvtTree, TTree* SkimTree=0, TTree* ZdcRechitTree=0, TTree* ZdcDigiTree=0, TTree* HltTree=0,
-              std::vector<std::string> hltpaths = {"HLT_HIZeroBias_HighRate_v7", "HLT_HIMinimumBiasHF1AND_v7", "HLT_HIMinimumBiasHF1ANDZDC1nOR_v4", "HLT_HIMinimumBiasHF1ANDZDC2nOR_v7"});
+              std::vector<std::string> hltpaths = prehltpaths);
   TTree* t;
   void calculate();
   void getentry(int j);
+  int getentries() { return mAdcTree->GetEntries(); }
+
+  const ntbranches& getbr() { return br; }
 
 private:
   TTree *mAdcTree, *mHiEvtTree, *mSkimTree, *mZdcRechitTree, *mZdcDigiTree, *mHltTree;
