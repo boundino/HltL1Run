@@ -67,6 +67,10 @@ int macro(std::string param)
   hfmax hf;
   
   auto inf = TFile::Open(inputname.c_str());
+  if (!inf) {
+    inputname = conf["Input"];
+    inf = TFile::Open(inputname.c_str());
+  }
   TTree* adc = 0;
   for (const std::string& tname : {"HFAdcana/adc", "mbnt"})
     if (xjjana::tree_exist(inf, tname.c_str())) {
@@ -84,11 +88,11 @@ int macro(std::string param)
     pPlus(4, 0), pMinus(4, 0);
   for (int i=0; i<4; i++) {
     pietaPlus[i] = new TH2F(Form("pietaPlus%d", i), ";ieta;Max ADC", 13, 29, 42, 19, 5, 24);
-    piphiPlus[i] = new TH2F(Form("piphiPlus%d", i), ";iphi;Max ADC", 71, 0, 71, 19, 5, 24);
-    pPlus[i] = new TH2F(Form("pPlus%d", i), ";ieta;iphi", 13, 29, 42, 71, 0, 71);
+    piphiPlus[i] = new TH2F(Form("piphiPlus%d", i), ";iphi;Max ADC", 73, 0, 73, 19, 5, 24);
+    pPlus[i] = new TH2F(Form("pPlus%d", i), ";ieta;iphi", 13, 29, 42, 73, 0, 73);
     pietaMinus[i] = new TH2F(Form("pietaMinus%d", i), ";ieta;Max ADC", 13, -41, -28, 19, 5, 24);
-    piphiMinus[i] = new TH2F(Form("piphiMinus%d", i), ";iphi;Max ADC", 71, 0, 71, 19, 5, 24);
-    pMinus[i] = new TH2F(Form("pMinus%d", i), ";ieta;iphi", 13, -41, -28, 71, 0, 71);
+    piphiMinus[i] = new TH2F(Form("piphiMinus%d", i), ";iphi;Max ADC", 73, 0, 73, 19, 5, 24);
+    pMinus[i] = new TH2F(Form("pMinus%d", i), ";ieta;iphi", 13, -41, -28, 73, 0, 73);
   }
 
   int nevtmax = 1.e4;
