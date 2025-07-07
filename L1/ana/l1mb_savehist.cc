@@ -20,9 +20,9 @@ int macro(std::string param)
 
   std::cout<<std::endl<<"  [ "<<(l1trigger::ismc?"MC":"data")<<" ]"<<std::endl<<std::endl;
   
-  TFile* inf = TFile::Open(inputname.c_str());
-  TTree* tt = (TTree*)inf->Get("mbnt");
-  l1trigger::evtl1ntuple* nt = new l1trigger::evtl1ntuple(tt);
+  auto inf = TFile::Open(inputname.c_str());
+  auto tt = (TTree*)inf->Get("mbnt");
+  auto nt = new l1trigger::evtl1ntuple(tt);
 
   // hist
   auto hcent = new TH1F("hcent", ";Centrality [%];Entries", l1trigger::nbincent, 0, 100);
@@ -34,7 +34,7 @@ int macro(std::string param)
   create_hist();
   
   // run & fill
-  int nentries = tt->GetEntries();
+  auto nentries = tt->GetEntries();
   int nZB_HLT = 0, ncolEvtSel = 0;
   for (int i=0; i<nentries; i++) {
 
@@ -56,6 +56,9 @@ int macro(std::string param)
     // ZDC distribution 
     hZDCdisGeV[0]->Fill(nt->ZDCplus);
     hZDCdisGeV[1]->Fill(nt->ZDCminus);
+
+    hZDCdisGeV[0]->Fill(nt->br.mhiHFPlus, nt->ZDCplus);
+    hZDCdisGeV[1]->Fill(nt->br.mhiHFMinus, nt->ZDCminus);
 
     // HLT
     if (l1trigger::MBindex >= 0 && nt->br.mTrigHLT[l1trigger::MBindex]) {
@@ -207,7 +210,7 @@ int macro(std::string param)
 
   std::string outputname = "rootfiles/"+outputdir+"/savehist.root";
   xjjroot::mkdir(outputname);
-  TFile* outf = new TFile(outputname.c_str(), "recreate");
+  auto outf = new TFile(outputname.c_str(), "recreate");
 
   write_hist();
 

@@ -32,19 +32,15 @@ class Output {
 public:
   Output(std::string name) : _name(name) { create_hist(); }
   std::string name() { return _name; }
-  TH1F *hhiHF, *hhiHFpf, *hhiHFpf__sel, *hhiHFpf__selL1;
-  std::map<std::string, TH1F*> hhiHFpf__selHF;
+  std::map<std::string, TH1F*> hhiHF;
+  // TH1F *hhiHF, *hhiHFpf, *hhiHFpf__sel, *hhiHFpf__selL1;
+  // std::map<std::string, TH1F*> hhiHFpf__selHF;
   TH2F *hhiHF_HFpf;
-  TH1F *hhiHFtowerAND, *hhiHFtowerOR;
+  std::map<std::string, TH1F*> hhiHFtower;
+  // TH1F *hhiHFtowerAND, *hhiHFtowerOR;
   
   void style_hist(const xjjroot::thgrstyle& t) {
-    xjjroot::setthgrstyle(hhiHF, t);
-    xjjroot::setthgrstyle(hhiHFpf, t);
-    xjjroot::setthgrstyle(hhiHFpf__sel, t);
-    xjjroot::setthgrstyle(hhiHFpf__selL1, t);
-    xjjroot::setthgrstyle(hhiHFtowerAND, t);
-    xjjroot::setthgrstyle(hhiHFtowerOR, t);
-    for (auto& h : hhiHFpf__selHF) {
+    for (auto& h : hhiHF) {
       xjjroot::setthgrstyle(h.second, t);
     }
   }
@@ -61,27 +57,28 @@ private:
     h->GetXaxis()->SetNdivisions(505);
     h->GetYaxis()->SetNdivisions(505);
   }
+  std::vector<std::string> _sel = {"", "pf", "pf__sel", "pf__selL1" };
   void create_hist() {
-    hhiHF = new TH1F(Form("hhiHF__%s", _name.c_str()), ";HF E_{t}^{sum} (Tower) [GeV];", 100, 0, _maxHF);
-    set_hist(hhiHF);
-    hhiHFpf = new TH1F(Form("hhiHFpf__%s", _name.c_str()), ";HF E_{t}^{sum} (PF) [GeV];", 100, 0, _maxHF);
-    set_hist(hhiHFpf);
-    hhiHFpf__sel = new TH1F(Form("hhiHFpf__sel__%s", _name.c_str()), ";HF E_{t}^{sum} (PF) [GeV];", 100, 0, _maxHF);
-    set_hist(hhiHFpf__sel);
-    hhiHFpf__selL1 = new TH1F(Form("hhiHFpf__selL1__%s", _name.c_str()), ";HF E_{t}^{sum} (PF) [GeV];", 100, 0, _maxHF);
-    set_hist(hhiHFpf__selL1);
+    for (auto& t : _sel) {
+      hhiHF[t] = new TH1F(Form("hiHF%s__%s", t.c_str(), _name.c_str()), ";HF E_{t}^{sum} (Tower) [GeV];", 100, 0, _maxHF);
+      set_hist(hhiHF[t]);
+    }
     for (int i=MIN_NHFTOWER; i <= MAX_NHFTOWER; i++) {
       for (int j=MIN_HFTOWERE; j <= MAX_HFTOWERE; j++) {
-        auto h = new TH1F(Form("hhiHFpf__sel%dTh%d__%s", i, j, _name.c_str()), ";HF E_{t}^{sum} (PF) [GeV];", 100, 0, _maxHF);
-        set_hist(h);
-        hhiHFpf__selHF[Form("%dTh%d", i, j)] = h;
+        auto str_hf = Form("pf__selHF%dTh%d", i, j);
+        hhiHF[str_hf] = new TH1F(Form("hiHF%s__%s", str_hf, _name.c_str()), ";HF E_{t}^{sum} (PF) [GeV];", 100, 0, _maxHF);
+        set_hist(hhiHF[str_hf]);
       }
     }
 
-    hhiHFtowerAND = new TH1F(Form("hhiHFtowerAND__%s", _name.c_str()), ";min(E^{tower}_{lead} HF+, E^{tower}_{lead} HF-) [GeV];", 100, 0, 100);
-    set_hist(hhiHFtowerAND);
-    hhiHFtowerOR = new TH1F(Form("hhiHFtowerOR__%s", _name.c_str()), ";max(E^{tower}_{lead} HF+, E^{tower}_{lead} HF-) [GeV];", 100, 0, 100);
-    set_hist(hhiHFtowerOR);
+    hhiHFtower["Plus"] = new TH1F(Form("hhiHFtowerPlus__%s", _name.c_str()), ";E^{tower}_{lead} HF+ [GeV];", 100, 0, 100);
+    set_hist(hhiHFtower["Plus"]);
+    hhiHFtower["Minus"] = new TH1F(Form("hhiHFtowerMinus__%s", _name.c_str()), ";E^{tower}_{lead} HF- [GeV];", 100, 0, 100);
+    set_hist(hhiHFtower["Minus"]);
+    hhiHFtower["AND"] = new TH1F(Form("hhiHFtowerAND__%s", _name.c_str()), ";min(E^{tower}_{lead} HF+, E^{tower}_{lead} HF-) [GeV];", 100, 0, 100);
+    set_hist(hhiHFtower["AND"]);
+    hhiHFtower["OR"] = new TH1F(Form("hhiHFtowerOR__%s", _name.c_str()), ";max(E^{tower}_{lead} HF+, E^{tower}_{lead} HF-) [GeV];", 100, 0, 100);
+    set_hist(hhiHFtower["OR"]);
 
     hhiHF_HFpf = new TH2F(Form("hhiHF_HFpf__%s", _name.c_str()), ";HF E_{t}^{sum} (PF) [GeV];HF E_{t}^{sum} (Tower) [GeV]", 100, 0, _maxHF, 100, 0, _maxHF);
     set_hist(hhiHF_HFpf);
@@ -123,6 +120,9 @@ void g_draw_eff(float eff, float pur) {
   xjjroot::drawtex(0.4, 0.3, Form("Efficiency = %.1f%s", eff*100., "%"), 0.04);
   xjjroot::drawtex(0.4, 0.3-0.045, Form("Purity = %.1f%s", pur*100., "%"), 0.04);
 }
+void g_draw_eff(Effpurity& r) {
+  g_draw_eff(r.eff, r.pur);
+}
 const std::vector<Style_t> g_fstyle = { 1001, 3354, 3345, 3305, 3395 };
 
 int macro(std::string conFig) {
@@ -135,36 +135,40 @@ int macro(std::string conFig) {
   }
   auto n = inputs.size();
   std::cout<<std::endl;
-  std::vector<Output> hists;
+  std::vector<Output> outputs;
   auto leg = new TLegend(0.54, 0.86-(n+1)*0.046, 0.80, 0.86-0.046);
   xjjroot::setleg(leg, 0.04);
 
   for (int ih=0; ih < n; ih++) {
     auto in = inputs[ih];
-    Output h(in.name);
+    Output o(in.name);
     const auto fg = in.fg;
-    
-    for (int i=0; i<fg->GetEntries(); i++) {
-      xjjc::progressslide(i, fg->GetEntries(), 10000);
+
+    auto nentries = fg->GetEntries();
+    for (int i=0; i<nentries; i++) {
+      xjjc::progressslide(i, fg->GetEntries(), 1000);
       fg->GetEntry(i);
 
-      h.hhiHF->Fill(fg->hiHF);
-      h.hhiHFpf->Fill(fg->hiHF_pf);
-      h.hhiHF_HFpf->Fill(fg->hiHF_pf, fg->hiHF);
+      continue;
+      
+      o.hhiHF[""]->Fill(fg->hiHF);
+      o.hhiHF["pf"]->Fill(fg->hiHF_pf);
+      o.hhiHF_HFpf->Fill(fg->hiHF_pf, fg->hiHF);
 
-      if (fg->pprimaryVertexFilter && fg->pclusterCompatibilityFilter) {
-        h.hhiHFpf__sel->Fill(fg->hiHF_pf);
+      if (fg->pprimaryVertexFilter && fg->pclusterCompatibilityFilter
+          && fabs(fg->vz) < 15) {
+        o.hhiHF["pf__sel"]->Fill(fg->hiHF_pf);
         for (int k=MIN_NHFTOWER; k <= MAX_NHFTOWER; k++) {
           for (int j=MIN_HFTOWERE; j <= MAX_HFTOWERE; j++) {
             auto key = Form("%dTh%d", k, j);
             if (fg->pphfCoincFilterPF[key]) {
-              h.hhiHFpf__selHF[key]->Fill(fg->hiHF_pf);
+              o.hhiHF[Form("pf__selHF%s", key)]->Fill(fg->hiHF_pf);
             }
           }
         }
       }
       if (fg->mMaxL1HFAdcPlus > 12 || fg->mMaxL1HFAdcMinus > 12) {
-        h.hhiHFpf__selL1->Fill(fg->hiHF_pf);
+        o.hhiHF["pf__selL1"]->Fill(fg->hiHF_pf);
       }
 
       float HFmaxPlus = 0, HFmaxMinus = 0;
@@ -181,20 +185,19 @@ int macro(std::string conFig) {
           HFmaxMinus = std::max(HFmaxMinus, (*fg->pfE)[j]);
         }
       }
-      h.hhiHFtowerAND->Fill(std::min(HFmaxPlus, HFmaxMinus));
-      h.hhiHFtowerOR->Fill(std::max(HFmaxPlus, HFmaxMinus));
+      o.hhiHFtower["Plus"]->Fill(HFmaxPlus);
+      o.hhiHFtower["Minus"]->Fill(HFmaxMinus);
+      o.hhiHFtower["AND"]->Fill(std::min(HFmaxPlus, HFmaxMinus));
+      o.hhiHFtower["OR"]->Fill(std::max(HFmaxPlus, HFmaxMinus));
     }
     xjjc::progressbar_summary(fg->GetEntries());
 
-    h.hhiHF->Scale(in.xsec / fg->GetEntries(), "width");
-    h.hhiHFpf->Scale(in.xsec / fg->GetEntries(), "width");
-    h.hhiHFpf__sel->Scale(in.xsec / fg->GetEntries(), "width");
-    h.hhiHFpf__selL1->Scale(in.xsec / fg->GetEntries(), "width");
-    for (auto& h : h.hhiHFpf__selHF) {
+    for (auto& h : o.hhiHF) {
       h.second->Scale(in.xsec / fg->GetEntries(), "width");
     }
-    h.hhiHFtowerAND->Scale(in.xsec / fg->GetEntries(), "width");
-    h.hhiHFtowerOR->Scale(in.xsec / fg->GetEntries(), "width");
+    for (auto& h : o.hhiHFtower) {
+      h.second->Scale(in.xsec / fg->GetEntries(), "width");
+    }
 
     const xjjroot::thgrstyle t = { .lcolor = (Color_t)(ih?xjjroot::colorlist_middle[ih]:kBlack),
                                    .lstyle = (Style_t)(ih?2:1),
@@ -202,45 +205,43 @@ int macro(std::string conFig) {
                                    .fcolor = (Color_t)(ih?xjjroot::colorlist_middle[ih]:0),
                                    .fstyle = g_fstyle[ih]
     };
-    h.style_hist(t);
-    leg->AddEntry(h.hhiHF, Form("%s#scale[0.3]{ }#scale[0.9]{(%s b)}", plot::leg(in.name).c_str(), xjjc::number_remove_zero(in.xsec).c_str()), "f");
+    o.style_hist(t);
+    leg->AddEntry(o.hhiHF[""], Form("%s#scale[0.3]{ }#scale[0.9]{(%s b)}", plot::leg(in.name).c_str(), xjjc::number_remove_zero(in.xsec).c_str()), "f");
 
-    hists.push_back(h);
+    outputs.push_back(o);
   }
 
-#define SETHMAX(s)                                                      \
-  Effpurity r##s = { .tot = 0 };                                        \
-  for (auto h : hists) {                                                \
-    r##s.vh.push_back(h.h##s);                                          \
-    r##s.tot += (nh_width(h.h##s));                                     \
-  }                                                                     \
-  xjjana::sethsmax<TH1F*>(r##s.vh, 1.2);                                \
-  r##s.pur = nh_width(hists.front().h##s)*1./r##s.tot;                  \
-  r##s.eff = nh_width(hists.front().h##s)*1./nh_width(hists.front().hhiHFpf); \
+  // #define SETHMAX(s)                                                      \
+  //   Effpurity r##s = { .tot = 0 };                                        \
+  //   for (const auto& o : outputs) {                                                \
+  //     r##s.vh.push_back(h.h##s);                                          \
+  //     r##s.tot += (nh_width(h.h##s));                                     \
+  //   }                                                                     \
+  //   xjjana::sethsmax<TH1F*>(r##s.vh, 1.2);                                \
+  //   r##s.pur = nh_width(outputs.front().h##s)*1./r##s.tot;                  \
+  //   r##s.eff = nh_width(outputs.front().h##s)*1./nh_width(outputs.front().hhiHF["pf"]); \
  
-  SETHMAX(hiHF)
-    SETHMAX(hiHFpf)
-    SETHMAX(hiHFpf__sel)
-    SETHMAX(hiHFpf__selL1)
-    SETHMAX(hiHFtowerAND)
-    SETHMAX(hiHFtowerOR)
+  //   SETHMAX(hiHF)
+  //     SETHMAX(hiHFpf)
+  //     SETHMAX(hiHFpf__sel)
+  //     SETHMAX(hiHFpf__selL1)
+  //     SETHMAX(hiHFtower["AND"])
+  //     SETHMAX(hiHFtower["OR"])
 
-    std::map<std::string, Effpurity> rhiHFpf__selHF;
-  for (int i=MIN_NHFTOWER; i <= MAX_NHFTOWER; i++) {
-    for (int j=MIN_HFTOWERE; j <= MAX_HFTOWERE; j++) {
-      auto key = Form("%dTh%d", i, j);
-      rhiHFpf__selHF[key].tot = 0;
-      for (auto& h : hists) {
-        rhiHFpf__selHF[key].vh.push_back(h.hhiHFpf__selHF[key]);
-        rhiHFpf__selHF[key].tot += nh_width(h.hhiHFpf__selHF[key]);
-      }
-      xjjana::sethsmax<TH1F*>(rhiHFpf__selHF[key].vh, 1.2);
-      rhiHFpf__selHF[key].pur = nh_width(hists.front().hhiHFpf__selHF[key])*1./rhiHFpf__selHF[key].tot;
-      rhiHFpf__selHF[key].eff = nh_width(hists.front().hhiHFpf__selHF[key])*1./nh_width(hists.front().hhiHFpf);
+  std::map<std::string, Effpurity> rhiHF;
+  for (const auto &[key, value] : outputs.front().hhiHF) {
+    rhiHF[key].tot = 0;
+    for (auto& o : outputs) {
+      rhiHF[key].vh.push_back(o.hhiHF[key]);
+      rhiHF[key].tot += nh_width(o.hhiHF[key]);
     }
+    xjjana::sethsmax<TH1F*>(rhiHF[key].vh, 1.2);
+    rhiHF[key].pur = nh_width(outputs.front().hhiHF[key])*1./rhiHF[key].tot;
+    rhiHF[key].eff = nh_width(outputs.front().hhiHF[key])*1./nh_width(outputs.front().hhiHF["pf"]);
   }
-  auto ghiHFpf__selHF = roc(rhiHFpf__selHF, "hiHFpf__selHF");
-  xjjroot::setthgrstyle(ghiHFpf__selHF, kBlack, 20, 1.2, kBlack, 1, 1);
+  
+  auto ghiHF = roc(rhiHF, "hiHF");
+  xjjroot::setthgrstyle(ghiHF, kBlack, 20, 1.2, kBlack, 1, 1);
   auto hempty__roc = new TH2F("hempty__roc", ";Efficiency;Purity", 10, 0.6, 1, 10, 0.8, 1.05);
   xjjroot::sethempty(hempty__roc);
   
@@ -250,92 +251,95 @@ int macro(std::string conFig) {
   pdf.prepare();
   hempty__roc->Draw("AXIS");
   xjjroot::drawline(hempty__roc->GetXaxis()->GetXmin(), 1, hempty__roc->GetXaxis()->GetXmax(), 1, kBlack, 2, 1);
-  ghiHFpf__selHF->Draw("p same");
-  g_draw(conf, "PV & clusComp & HFCoinc");
+  ghiHF->Draw("p same");
+  float xx = 0.3, yy = 0.5;
+  for(auto& in : inputs) {
+    xjjroot::drawtex(xx, yy-=0.04, Form("%s#scale[0.3]{ }#scale[0.9]{(%s b)}", plot::leg(in.name).c_str(), xjjc::number_remove_zero(in.xsec).c_str()), 0.038);
+  }
+  g_draw(conf, "|v_{z}| < 15 & clusComp & HFCoinc");
   pdf.write();  
   
   pdf.getc()->SetLogy();
 
   pdf.prepare();
-  hists.front().hhiHF->Draw("AXIS");
-  for (auto h : hists) {
-    h.hhiHF->Draw("hist same");
+  outputs.front().hhiHF["pf"]->Draw("AXIS");
+  for (auto& o : outputs) {
+    o.hhiHF["pf"]->Draw("hist same");
   }
   leg->Draw();
   g_draw(conf, "No selection");
-  g_draw_eff(rhiHF.eff, rhiHF.pur);
-  pdf.write();
-  
-  pdf.prepare();
-  hists.front().hhiHFpf->Draw("AXIS");
-  for (auto h : hists) {
-    h.hhiHFpf->Draw("hist same");
-  }
-  leg->Draw();
-  g_draw(conf, "No selection");
-  g_draw_eff(rhiHFpf.eff, rhiHFpf.pur);
+  g_draw_eff(rhiHF["pf"]);
   pdf.write();
 
   pdf.prepare();
-  hists.front().hhiHFpf__sel->Draw("AXIS");
-  for (auto h : hists) {
-    h.hhiHFpf__sel->Draw("hist same");
+  outputs.front().hhiHF["pf__sel"]->Draw("AXIS");
+  for (auto& o : outputs) {
+    o.hhiHF["pf__sel"]->Draw("hist same");
   }
   leg->Draw();
-  g_draw(conf, "PV & clusComp");
-  g_draw_eff(rhiHFpf__sel.eff, rhiHFpf__sel.pur);
+  g_draw(conf, "|v_{z}| < 15 & clusComp");
+  g_draw_eff(rhiHF["pf__sel"]);
   pdf.write();
 
   for (int i=MIN_NHFTOWER; i <= MAX_NHFTOWER; i++) {
     for (int j=MIN_HFTOWERE; j <= MAX_HFTOWERE; j++) {
-      auto key = Form("%dTh%d", i, j);
-    
+      auto tag = Form("%dTh%d", i, j), key = Form("pf__selHF%s", tag);
       pdf.prepare();
-      hists.front().hhiHFpf__selHF[key]->Draw("AXIS");
-      for (auto h : hists) {
-        h.hhiHFpf__selHF[key]->Draw("hist same");
+      outputs.front().hhiHF[key]->Draw("AXIS");
+      for (auto& o : outputs) {
+        o.hhiHF[key]->Draw("hist same");
       }
       leg->Draw();
-      g_draw(conf, Form("PV & clusComp & HFCoinc%s", key));
-      g_draw_eff(rhiHFpf__selHF[key].eff, rhiHFpf__selHF[key].pur);
+      g_draw(conf, Form("|v_{z}| < 15 & clusComp & HFCoinc%s", tag));
+      g_draw_eff(rhiHF[key]);
       pdf.write();
     }
   }
 
   pdf.prepare();
-  hists.front().hhiHFpf__selL1->Draw("AXIS");
-  for (auto h : hists) {
-    h.hhiHFpf__selL1->Draw("hist same");
+  outputs.front().hhiHF["pf__selL1"]->Draw("AXIS");
+  for (auto& o : outputs) {
+    o.hhiHF["pf__selL1"]->Draw("hist same");
   }
   leg->Draw();
   g_draw(conf, "L1_HFOR12");
-  g_draw_eff(rhiHFpf__selL1.eff, rhiHFpf__selL1.pur);
+  g_draw_eff(rhiHF["pf__selL1"]);
   pdf.write();
 
   pdf.prepare();
-  hists.front().hhiHFtowerAND->Draw("AXIS");
-  for (auto h : hists) {
-    h.hhiHFtowerAND->Draw("hist same");
+  outputs.front().hhiHFtower["AND"]->Draw("AXIS");
+  for (auto& o : outputs) {
+    o.hhiHFtower["AND"]->Draw("hist same");
   }
   leg->Draw();
   g_draw(conf, "No selection");
   pdf.write();
   
   pdf.prepare();
-  hists.front().hhiHFtowerOR->Draw("AXIS");
-  for (auto h : hists) {
-    h.hhiHFtowerOR->Draw("hist same");
+  outputs.front().hhiHFtower["OR"]->Draw("AXIS");
+  for (auto& o : outputs) {
+    o.hhiHFtower["OR"]->Draw("hist same");
   }
   leg->Draw();
   g_draw(conf, "No selection");
+  pdf.write();
+  
+  pdf.prepare();
+  outputs.front().hhiHF[""]->Draw("AXIS");
+  for (auto& o : outputs) {
+    o.hhiHF[""]->Draw("hist same");
+  }
+  leg->Draw();
+  g_draw(conf, "No selection");
+  g_draw_eff(rhiHF[""]);
   pdf.write();
   
   pdf.getc()->SetLogy(0);
 
-  for (auto h : hists) {
+  for (auto& o : outputs) {
     pdf.prepare();
-    h.hhiHF_HFpf->Draw("scat");
-    g_draw(conf, plot::leg(h.name()));
+    o.hhiHF_HFpf->Draw("scat");
+    g_draw(conf, plot::leg(o.name()));
     pdf.write();
   }
 
