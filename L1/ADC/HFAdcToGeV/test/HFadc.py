@@ -15,7 +15,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1),
+    input = cms.untracked.int32(-1), 
     output = cms.optional.untracked.allowed(cms.int32,cms.PSet)
 )
 
@@ -46,16 +46,16 @@ associatePatAlgosToolsTask(process)
 
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
-process.Trigger = cms.EDFilter( "TriggerResultsFilter",
+process.Trigger = cms.EDFilter("TriggerResultsFilter",
       triggerConditions = cms.vstring(
         "HLT_OxyZeroBias_v1"
-         ),
-      hltResults = cms.InputTag( "TriggerResults", "", "HLT" ),
-      l1tResults = cms.InputTag( "gtStage2Digis" ),
-      l1tIgnoreMask = cms.bool( False ),
-      l1techIgnorePrescales = cms.bool( True ),
-      daqPartitions = cms.uint32( 1 ),
-      throw = cms.bool( True )
+      ),
+      hltResults = cms.InputTag("TriggerResults", "", "HLT"),
+      l1tResults = cms.InputTag("gtStage2Digis"),
+      l1tIgnoreMask = cms.bool(False ),
+      l1techIgnorePrescales = cms.bool(True ),
+      daqPartitions = cms.uint32(1),
+      throw = cms.bool(True)
 )
 for path in process.paths:
     getattr(process,path)._seq = process.Trigger * getattr(process,path)._seq
