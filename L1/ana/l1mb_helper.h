@@ -11,35 +11,46 @@ namespace l1style {
   int colors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1, kCyan+1};
   Size_t mmsize = 1.1;
   Width_t llwidth = 2;
-  float y_up = 0.86, y_down = 0.80;
-  float y_t(float y) { return (y-0.03); }
-  float y_t_up() { return y_t(y_up); }
-  float y_t_down() { return y_t(y_down); }
-  class legt {
-  public:
-    legt(std::string text,
-         Style_t mstyle=-1, Style_t lstyle=-1,
-         float yy = 0.86) {
-      if (l1trigger::ismc) { ncol = 1; }
-      lleg = new TLegend(0.52, yy-0.06, 0.52+0.09*ncol, yy);
+  enum position { Up, Down };
+  float pos_y[] = { 0.86, 0.80 };
+  float pos_x_split = 0.34;
+  enum algo { No, And, Or };
+  std::string t_algo[] = { "", "AND", "OR" };
+  //
+  void drawleg(algo hf, algo zdc,
+               Style_t mstyle, Style_t lstyle,
+               position pos) {
+    if (hf) {
+      xjjroot::drawtex(pos_x_split, pos_y[pos]-0.035, Form("HF_#bf{%s}", t_algo[hf].c_str()), 0.037, 32);
+    }
+    if (mstyle > 0) {
+      int ncol = zdc?4:1;
+      auto pos_x_leg = zdc?pos_x_split+0.16:pos_x_split;
+      auto lleg = new TLegend(pos_x_leg+0.02, pos_y[pos]-0.06,
+                              pos_x_leg+0.02+0.09*ncol, pos_y[pos]);
       lleg->SetNColumns(ncol);
       xjjroot::setleg(lleg, 0.037);
-      for (int k=0; k<l1trigger::nNeus; k++) {
-        xjjroot::addentrybystyle(lleg, Form("(%dn)", k), "pl", colors[k], mstyle, mmsize, colors[k], lstyle, llwidth);
-        if (l1trigger::ismc) { break; }
+      if (zdc) {
+        for (int k=0; k<l1trigger::nNeus; k++) {
+          xjjroot::addentrybystyle(lleg, Form("(%dn)", k), "pl", colors[k], mstyle, mmsize, colors[k], lstyle, llwidth);
+        }
+      } else {
+        xjjroot::addentrybystyle(lleg, "", "pl", colors[0], mstyle, mmsize, colors[0], lstyle, llwidth);
       }
-      tt = xjjroot::drawtex(0.50, y_t(yy), text.c_str(), 0.037, 32, 42, kBlack, 0, false);
-    }
-    void draw() {
       lleg->Draw();
-      tt->Draw();
+      if (zdc)
+        xjjroot::drawtex(pos_x_split, pos_y[pos]-0.035, Form("%s ZDC_#bf{%s}", (hf?" &":""), t_algo[zdc].c_str()), 0.037, 12);
     }
-  private:
-    TLegend* lleg;
-    TLatex* tt;
-    int ncol = 4;
-  };
-  
+  }
+  template<class T = TH1>
+  void drawleg(algo hf = And, algo zdc = Or, T* gr = 0, position pos = Up) {
+    if (gr) {
+      drawleg(hf, zdc, gr->GetMarkerStyle(), gr->GetLineStyle(), pos);
+    } else {
+      drawleg(hf, zdc, -1, -1, pos);
+    }
+  }
+  //
 } // namespace l1style {
 
 // common h
@@ -67,7 +78,7 @@ TH1F *heffden_int, *heffden_interest;
 void create_hist() {
   for (int j=0; j<l1trigger::nDirs; j++) {
     hZDCdisGeV[j] = new TH1F(Form("hZDCdisGeV%s", l1trigger::mDir[j].c_str()), Form(";ZDC %s (GeV);Entries", l1trigger::mDir[j].c_str()), 500, 0, 1.2e+4);
-    hZDC_HF[j] = new TH2F(Form("hZDC_HF%s", l1trigger::mDir[j].c_str()), Form(";HF %s E_{T} Sum (GeV);ZDC %s (GeV)", l1trigger::mDir[j].c_str()), 100, 0, 10000, 100, 0, 1.2e+4);
+    hZDC_HF[j] = new TH2F(Form("hZDC_HF%s", l1trigger::mDir[j].c_str()), Form(";HF %s E_{T} Sum (GeV);ZDC %s (GeV)", l1trigger::mDir[j].c_str(), l1trigger::mDir[j].c_str()), 100, 0, 10000, 100, 0, 1.2e+4);
   }
   for (int k=0; k<l1trigger::nNeus; k++) {
     hrate_And_ZDCAnd[k] = new TH1F(Form("hrate_And_ZDCAnd_%dn", k), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc);

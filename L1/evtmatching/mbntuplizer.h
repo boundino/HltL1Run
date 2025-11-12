@@ -7,7 +7,7 @@
 
 #define MAX_DIGI 56
 
-const std::vector<std::string> prehltpaths = {"HLT_OxyZeroBias_v1", "HLT_MinimumBiasHF_OR_BptxAND_v1", "HLT_MinimumBiasHF_AND_BptxAND_v1", "HLT_OxyZDC1nOR_v1"};
+const std::vector<std::string> prehltpaths = {"HLT_HIZeroBias_HighRate_v8", "HLT_HIMinimumBiasHF1AND_v8", "HLT_HIMinimumBiasHF1ANDZDC1nOR_v6", "HLT_HIMinimumBiasHF1ANDZDC2nOR_v9"};
 class mbntuplizer
 {
 public:

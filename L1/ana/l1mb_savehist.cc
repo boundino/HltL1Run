@@ -13,7 +13,6 @@
 int macro(std::string param)
 {
   xjjc::config conf(param);
-  conf.print();
   if (l1trigger::setconfig(conf)) return 2;
   int minLS = conf.vi("minLS"), maxLS = conf.vi("maxLS");
   std::string inputname = conf["Input"], outputdir = conf["Output"];
@@ -42,11 +41,11 @@ int macro(std::string param)
     nt->GetEntry(i);
 
     // select ZB events
-    if (!l1trigger::ismc) {
+    // if (!l1trigger::ismc) {
       if (!nt->HLT_ZB) continue;
       if (minLS > 0 && nt->br.mLS < minLS) continue;
       if (maxLS > 0 && nt->br.mLS > maxLS) continue;
-    }
+    // }
     
     nZB_HLT++;
       
@@ -57,8 +56,8 @@ int macro(std::string param)
     hZDCdisGeV[0]->Fill(nt->ZDCplus);
     hZDCdisGeV[1]->Fill(nt->ZDCminus);
 
-    hZDCdisGeV[0]->Fill(nt->br.mhiHFPlus, nt->ZDCplus);
-    hZDCdisGeV[1]->Fill(nt->br.mhiHFMinus, nt->ZDCminus);
+    // hZDCdisGeV[0]->Fill(nt->br.mhiHFPlus, nt->ZDCplus);
+    // hZDCdisGeV[1]->Fill(nt->br.mhiHFMinus, nt->ZDCminus);
 
     // HLT
     if (l1trigger::MBindex >= 0 && nt->br.mTrigHLT[l1trigger::MBindex]) {
@@ -69,7 +68,7 @@ int macro(std::string param)
         hcent_hlt_fake->Fill(0);
       }
     }
-    if (l1trigger::ismc || nt->colEvtSel) {
+    if (nt->colEvtSel) {
       hcent->Fill(nt->br.mhiBin/2.);
       hcent_hlt_effden->Fill(nt->br.mhiBin);
       ncolEvtSel++;
@@ -77,7 +76,7 @@ int macro(std::string param)
       
     // rate && eff
     for (int a=0; a<l1trigger::nadc; a++) {
-      if (l1trigger::ismc || nt->colEvtSel) {
+      if (nt->colEvtSel) {
         heffden[icent]->Fill(a);
         heffden_int->Fill(a);
       }
@@ -86,7 +85,7 @@ int macro(std::string param)
           if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] && nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
             // And_ZDCAnd
             hrate_And_ZDCAnd[k]->Fill(a);
-            if (l1trigger::ismc || nt->colEvtSel) {
+            if (nt->colEvtSel) {
               heff_And_ZDCAnd[k][icent]->Fill(a);
               heff_And_ZDCAnd_int[k]->Fill(a);
               heffcent_And_ZDCAnd[k][a]->Fill(nt->br.mhiBin/2.);
@@ -98,7 +97,7 @@ int macro(std::string param)
           if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] || nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
             // And_ZDCOr
             hrate_And_ZDCOr[k]->Fill(a);
-            if (l1trigger::ismc || nt->colEvtSel) {
+            if (nt->colEvtSel) {
               heff_And_ZDCOr[k][icent]->Fill(a);
               heff_And_ZDCOr_int[k]->Fill(a);
               heffcent_And_ZDCOr[k][a]->Fill(nt->br.mhiBin/2.);
@@ -112,7 +111,7 @@ int macro(std::string param)
           if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] && nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
             // Or_ZDCAnd
             hrate_Or_ZDCAnd[k]->Fill(a);
-            if (l1trigger::ismc || nt->colEvtSel) {
+            if (nt->colEvtSel) {
               heff_Or_ZDCAnd[k][icent]->Fill(a);
               heff_Or_ZDCAnd_int[k]->Fill(a);
               heffcent_Or_ZDCAnd[k][a]->Fill(nt->br.mhiBin/2.);
@@ -124,7 +123,7 @@ int macro(std::string param)
           if (nt->ZDCplus >= l1trigger::mNeuZDCLow[0][k] || nt->ZDCminus >= l1trigger::mNeuZDCLow[1][k]) {
             // Or_ZDCOr
             hrate_Or_ZDCOr[k]->Fill(a);
-            if (l1trigger::ismc || nt->colEvtSel) {
+            if (nt->colEvtSel) {
               heff_Or_ZDCOr[k][icent]->Fill(a);
               heff_Or_ZDCOr_int[k]->Fill(a);
               heffcent_Or_ZDCOr[k][a]->Fill(nt->br.mhiBin/2.);
