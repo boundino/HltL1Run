@@ -14,6 +14,13 @@
   EXPAND(Or, And)                               \
   //
 
+#define COMBINE3D(EXPAND, t)                    \
+  EXPAND(And, Or, t)                            \
+  EXPAND(And, And, t)                           \
+  EXPAND(Or, Or, t)                             \
+  EXPAND(Or, And, t)                            \
+  //
+
 namespace l1style {
   int colors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1, kCyan+1};
   Size_t mmsize = 1.1;
