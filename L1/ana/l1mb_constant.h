@@ -22,11 +22,10 @@ namespace l1trigger
   std::string cmstag = xjjroot::CMS::preliminary, tag = "", subtag = "";
 
   // std::vector<short int> cent = {0, 200};
-  // const int ncent = cent.size() - 1;
-  // int l_interest = 1;
   std::vector<short int> cent = {0, 10, 140, 160, 180, 200};
-  const int ncent = cent.size() - 1;
-  int l_interest = cent.size() - 2; // 0-90%
+  const int ncent = cent.size() - 1, l_incl = ncent;
+  // int l_interest = l_incl;
+  int l_interest = l_incl - 1; // 0-90%
 
   int setconfig(xjjc::config conf) {
     // hlt

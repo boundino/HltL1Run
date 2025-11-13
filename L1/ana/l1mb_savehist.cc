@@ -78,7 +78,7 @@ int macro(std::string param)
     for (int a=0; a<l1trigger::nadc; a++) {
       if (nt->colEvtSel) {
         heffden[icent]->Fill(a);
-        heffden_int->Fill(a);
+        heffden_incl->Fill(a);
       }
       for (int k=0; k<l1trigger::nNeus; k++) {
         if (nt->AdcAND > a) {
@@ -87,7 +87,7 @@ int macro(std::string param)
             hrate_And_ZDCAnd[k]->Fill(a);
             if (nt->colEvtSel) {
               heff_And_ZDCAnd[k][icent]->Fill(a);
-              heff_And_ZDCAnd_int[k]->Fill(a);
+              heff_And_ZDCAnd_incl[k]->Fill(a);
               heffcent_And_ZDCAnd[k][a]->Fill(nt->br.mhiBin/2.);
             }
             else {
@@ -99,7 +99,7 @@ int macro(std::string param)
             hrate_And_ZDCOr[k]->Fill(a);
             if (nt->colEvtSel) {
               heff_And_ZDCOr[k][icent]->Fill(a);
-              heff_And_ZDCOr_int[k]->Fill(a);
+              heff_And_ZDCOr_incl[k]->Fill(a);
               heffcent_And_ZDCOr[k][a]->Fill(nt->br.mhiBin/2.);
             }
             else {
@@ -113,7 +113,7 @@ int macro(std::string param)
             hrate_Or_ZDCAnd[k]->Fill(a);
             if (nt->colEvtSel) {
               heff_Or_ZDCAnd[k][icent]->Fill(a);
-              heff_Or_ZDCAnd_int[k]->Fill(a);
+              heff_Or_ZDCAnd_incl[k]->Fill(a);
               heffcent_Or_ZDCAnd[k][a]->Fill(nt->br.mhiBin/2.);
             }
             else {
@@ -125,7 +125,7 @@ int macro(std::string param)
             hrate_Or_ZDCOr[k]->Fill(a);
             if (nt->colEvtSel) {
               heff_Or_ZDCOr[k][icent]->Fill(a);
-              heff_Or_ZDCOr_int[k]->Fill(a);
+              heff_Or_ZDCOr_incl[k]->Fill(a);
               heffcent_Or_ZDCOr[k][a]->Fill(nt->br.mhiBin/2.);
             }
             else {
@@ -159,7 +159,7 @@ int macro(std::string param)
   hcent_hlt_eff->Sumw2();
   hcent_hlt_eff->Divide(hcent_hlt_effden);
   for (int l=0; l<l1trigger::ncent; l++) {
-    if (l > l1trigger::l_interest) continue;
+    if (l >= l1trigger::l_interest) continue;
     heffden_interest->Add(heffden[l]);
     for (int k=0; k<l1trigger::nNeus; k++) {
       heff_And_ZDCAnd_interest[k]->Add(heff_And_ZDCAnd[k][l]);
@@ -189,14 +189,14 @@ int macro(std::string param)
       heffcent_Or_ZDCOr[k][a]->Sumw2();
       heffcent_Or_ZDCOr[k][a]->Divide(hcent);
     }
-    heff_And_ZDCAnd_int[k]->Sumw2();
-    heff_And_ZDCAnd_int[k]->Divide(heffden_int);
-    heff_And_ZDCOr_int[k]->Sumw2();
-    heff_And_ZDCOr_int[k]->Divide(heffden_int);
-    heff_Or_ZDCAnd_int[k]->Sumw2();
-    heff_Or_ZDCAnd_int[k]->Divide(heffden_int);
-    heff_Or_ZDCOr_int[k]->Sumw2();
-    heff_Or_ZDCOr_int[k]->Divide(heffden_int);
+    heff_And_ZDCAnd_incl[k]->Sumw2();
+    heff_And_ZDCAnd_incl[k]->Divide(heffden_incl);
+    heff_And_ZDCOr_incl[k]->Sumw2();
+    heff_And_ZDCOr_incl[k]->Divide(heffden_incl);
+    heff_Or_ZDCAnd_incl[k]->Sumw2();
+    heff_Or_ZDCAnd_incl[k]->Divide(heffden_incl);
+    heff_Or_ZDCOr_incl[k]->Sumw2();
+    heff_Or_ZDCOr_incl[k]->Divide(heffden_incl);
     heff_And_ZDCAnd_interest[k]->Sumw2();
     heff_And_ZDCAnd_interest[k]->Divide(heffden_interest);
     heff_And_ZDCOr_interest[k]->Sumw2();

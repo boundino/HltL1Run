@@ -21,8 +21,15 @@
   EXPAND(Or, And, t)                            \
   //
 
+#define COMBINESTYLE(EXPAND)                    \
+  EXPAND(And, Or, 24, 2)                        \
+  EXPAND(And, And, 20, 1)                       \
+  EXPAND(Or, Or, 25, 2)                         \
+  EXPAND(Or, And, 21, 1)                        \
+  //
+
 namespace l1style {
-  int colors[] = {kBlack, kRed, kBlue, kGreen+2, kMagenta+1, kCyan+1};
+  int colors[] = { kBlack, kRed, kBlue, kGreen+2, kMagenta+1, kCyan+1 };
   Size_t mmsize = 1.1;
   Width_t llwidth = 2;
   enum position { Up, Down };
@@ -75,13 +82,13 @@ std::vector<TH2F*> hZDC_HF(l1trigger::nDirs, 0);
   std::vector<TH1F*> hfake_##h##_ZDC##z(l1trigger::nNeus, 0);           \
   auto heff_##h##_ZDC##z = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent); \
   auto heffcent_##h##_ZDC##z = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::nadc); \
-  std::vector<TH1F*> heff_##h##_ZDC##z##_int(l1trigger::nNeus, 0);      \
+  std::vector<TH1F*> heff_##h##_ZDC##z##_incl(l1trigger::nNeus, 0);      \
   std::vector<TH1F*> heff_##h##_ZDC##z##_interest(l1trigger::nNeus, 0); \
 
 COMBINE(DECLAREH);
 
 std::vector<TH1F*> heffden(l1trigger::ncent, 0);
-TH1F *heffden_int = 0, *heffden_interest = 0;
+TH1F *heffden_incl = 0, *heffden_interest = 0;
 
 #define CREATEH(h, z)                                                   \
   hrate_##h##_ZDC##z[k] = new TH1F(Form("hrate_" #h "_ZDC" #z "_%dn", k), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc); \
@@ -92,7 +99,7 @@ TH1F *heffden_int = 0, *heffden_interest = 0;
   for (int a=0; a<l1trigger::nadc; a++) {                               \
     heffcent_##h##_ZDC##z[k][a] = new TH1F(Form("heffcent_" #h "_ZDC" #z "_%dn_%d", k, a), ";Centrality [%];", l1trigger::nbincent, 0, 100); \
   }                                                                     \
-  heff_##h##_ZDC##z##_int[k] = new TH1F(Form("heff_" #h "_ZDC" #z "_int_%dn", k), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc); \
+  heff_##h##_ZDC##z##_incl[k] = new TH1F(Form("heff_" #h "_ZDC" #z "_incl_%dn", k), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc); \
   heff_##h##_ZDC##z##_interest[k] = new TH1F(Form("heff_" #h "_ZDC" #z "_interest_%dn", k), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc); \
 
 
@@ -107,7 +114,7 @@ void create_hist() {
   for (int l=0; l<l1trigger::ncent; l++) {
     heffden[l] = new TH1F(Form("heffden_%d", l), ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc);
   }
-  heffden_int = new TH1F("heffden_int", ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc);
+  heffden_incl = new TH1F("heffden_incl", ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc);
   heffden_interest = new TH1F("heffden_interest", ";L1 HF threshold (ADC);", l1trigger::nadc, 0, l1trigger::nadc);
 }
 
@@ -120,7 +127,7 @@ void create_hist() {
   for (int a=0; a<l1trigger::nadc; a++) {                               \
     heffcent_##h##_ZDC##z[k][a] = (TH1F*)inf->Get(Form("heffcent_" #h "_ZDC" #z "_%dn_%d", k, a)); \
   }                                                                     \
-  heff_##h##_ZDC##z##_int[k] = (TH1F*)inf->Get(Form("heff_" #h "_ZDC" #z "_int_%dn", k)); \
+  heff_##h##_ZDC##z##_incl[k] = (TH1F*)inf->Get(Form("heff_" #h "_ZDC" #z "_incl_%dn", k)); \
   heff_##h##_ZDC##z##_interest[k] = (TH1F*)inf->Get(Form("heff_" #h "_ZDC" #z "_interest_%dn", k)); \
 
 
@@ -160,70 +167,38 @@ TGraph* roc(TH1F* hx, TH1F* hy, std::string name="")
   auto groc_##h##_ZDC##z = xjjc::array2d<TGraph*>(l1trigger::nNeus, l1trigger::ncent); \
   auto gfake_##h##_ZDC##z = xjjc::array2d<TGraph*>(l1trigger::nNeus, l1trigger::ncent); \
   auto geffcent_##h##_ZDC##z = xjjc::array2d<TGraphAsymmErrors*>(l1trigger::nNeus, l1trigger::nadc); \
-  std::vector<TGraphErrors*> gr_heff_##h##_ZDC##z##_int(l1trigger::nNeus, 0); \
+  std::vector<TGraphErrors*> gr_heff_##h##_ZDC##z##_incl(l1trigger::nNeus, 0); \
   std::vector<TGraphErrors*> gr_heff_##h##_ZDC##z##_interest(l1trigger::nNeus, 0); \
 
 COMBINE(DECLAREGR);
 std::vector<TGraphErrors*> gr_heff_And_HFOnly(l1trigger::ncent), gr_heff_Or_HFOnly(l1trigger::ncent);
 
+
+#define MAKEGR(h, z, ms, ls)                                            \
+  for (int l=0; l<l1trigger::ncent; l++) {                              \
+    groc_##h##_ZDC##z[k][l] = roc(hrate_##h##_ZDC##z[k], heff_##h##_ZDC##z[k][l], Form("groc_" #h "_ZDC" #z "_%dn_%d", k, l)); \
+    xjjroot::setthgrstyle(groc_##h##_ZDC##z[k][l], l1style::colors[k], ms, 1.1, l1style::colors[k], ls, 2); \
+    gfake_##h##_ZDC##z[k][l] = roc(hfake_##h##_ZDC##z[k], heff_##h##_ZDC##z[k][l], Form("gfake_" #h "_ZDC" #z "_%dn_%d", k, l)); \
+    xjjroot::setthgrstyle(gfake_##h##_ZDC##z[k][l], l1style::colors[k], ms, 1.1, l1style::colors[k], ls, 2); \
+  }                                                                     \
+  for (int a=0; a<l1trigger::nadc; a++) {                               \
+    geffcent_##h##_ZDC##z[k][a] = xjjana::shifthistcenter(heffcent_##h##_ZDC##z[k][a], Form("geffcent_" #h "_ZDC" #z "_%dn_%d", k, a), 0, "X0Y0"); \
+    xjjroot::setthgrstyle(geffcent_##h##_ZDC##z[k][a], l1style::colors[k], ms, 1.1, l1style::colors[k], ls, 2); \
+  }                                                                     \
+  gr_heff_##h##_ZDC##z##_incl[k] = xjjana::shifthistcenter(heff_##h##_ZDC##z##_incl[k], Form("gr_%s", heff_##h##_ZDC##z##_incl[k]->GetName()), (int)-1); \
+  xjjroot::setthgrstyle(gr_heff_##h##_ZDC##z##_incl[k], l1style::colors[k], ms, 1.1, l1style::colors[k], ls, 2); \
+  gr_heff_##h##_ZDC##z##_interest[k] = xjjana::shifthistcenter(heff_##h##_ZDC##z##_interest[k], Form("gr_%s", heff_##h##_ZDC##z##_interest[k]->GetName()), (int)-1); \
+  xjjroot::setthgrstyle(gr_heff_##h##_ZDC##z##_interest[k], l1style::colors[k], ms, 1.1, l1style::colors[k], ls, 2); \
+
 void make_gr() {
   for (int k=0; k<l1trigger::nNeus; k++) {
-    for (int l=0; l<l1trigger::ncent; l++) {
-      groc_And_ZDCAnd[k][l] = roc(hrate_And_ZDCAnd[k], heff_And_ZDCAnd[k][l], Form("groc_And_ZDCAnd_%dn_%d", k, l));
-      xjjroot::setthgrstyle(groc_And_ZDCAnd[k][l], l1style::colors[k], 20, 1.1, l1style::colors[k], 1, 2);
-      gfake_And_ZDCAnd[k][l] = roc(hfake_And_ZDCAnd[k], heff_And_ZDCAnd[k][l], Form("gfake_And_ZDCAnd_%dn_%d", k, l));
-      xjjroot::setthgrstyle(gfake_And_ZDCAnd[k][l], l1style::colors[k], 20, 1.1, l1style::colors[k], 1, 2);
-
-      groc_And_ZDCOr[k][l] = roc(hrate_And_ZDCOr[k], heff_And_ZDCOr[k][l], Form("groc_And_ZDCOr_%dn_%d", k, l));
-      xjjroot::setthgrstyle(groc_And_ZDCOr[k][l], l1style::colors[k], 24, 1.1, l1style::colors[k], 2, 2);
-      gfake_And_ZDCOr[k][l] = roc(hfake_And_ZDCOr[k], heff_And_ZDCOr[k][l], Form("gfake_And_ZDCOr_%dn_%d", k, l));
-      xjjroot::setthgrstyle(gfake_And_ZDCOr[k][l], l1style::colors[k], 24, 1.1, l1style::colors[k], 2, 2);
-
-      groc_Or_ZDCAnd[k][l] = roc(hrate_Or_ZDCAnd[k], heff_Or_ZDCAnd[k][l], Form("groc_Or_ZDCAnd_%dn_%d", k, l));
-      xjjroot::setthgrstyle(groc_Or_ZDCAnd[k][l], l1style::colors[k], 21, 1.1, l1style::colors[k], 1, 2);
-      gfake_Or_ZDCAnd[k][l] = roc(hfake_Or_ZDCAnd[k], heff_Or_ZDCAnd[k][l], Form("gfake_Or_ZDCAnd_%dn_%d", k, l));
-      xjjroot::setthgrstyle(gfake_Or_ZDCAnd[k][l], l1style::colors[k], 21, 1.1, l1style::colors[k], 1, 2);
-
-      groc_Or_ZDCOr[k][l] = roc(hrate_Or_ZDCOr[k], heff_Or_ZDCOr[k][l], Form("groc_Or_ZDCOr_%dn_%d", k, l));
-      xjjroot::setthgrstyle(groc_Or_ZDCOr[k][l], l1style::colors[k], 25, 1.1, l1style::colors[k], 2, 2);
-      gfake_Or_ZDCOr[k][l] = roc(hfake_Or_ZDCOr[k], heff_Or_ZDCOr[k][l], Form("gfake_Or_ZDCOr_%dn_%d", k, l));
-      xjjroot::setthgrstyle(gfake_Or_ZDCOr[k][l], l1style::colors[k], 25, 1.1, l1style::colors[k], 2, 2);
-    }
-    for (int a=0; a<l1trigger::nadc; a++) {
-      geffcent_And_ZDCAnd[k][a] = xjjana::shifthistcenter(heffcent_And_ZDCAnd[k][a], Form("geffcent_And_ZDCAnd_%dn_%d", k, a), 0, "X0Y0");
-      xjjroot::setthgrstyle(geffcent_And_ZDCAnd[k][a], l1style::colors[k], 20, 1.1, l1style::colors[k], 1, 2);
-      geffcent_And_ZDCOr[k][a] = xjjana::shifthistcenter(heffcent_And_ZDCOr[k][a], Form("geffcent_And_ZDCOr_%dn_%d", k, a), 0, "X0Y0");
-      xjjroot::setthgrstyle(geffcent_And_ZDCOr[k][a], l1style::colors[k], 24, 1.1, l1style::colors[k], 2, 2);
-      geffcent_Or_ZDCAnd[k][a] = xjjana::shifthistcenter(heffcent_Or_ZDCAnd[k][a], Form("geffcent_Or_ZDCAnd_%dn_%d", k, a), 0, "X0Y0");
-      xjjroot::setthgrstyle(geffcent_Or_ZDCAnd[k][a], l1style::colors[k], 21, 1.1, l1style::colors[k], 1, 2);
-      geffcent_Or_ZDCOr[k][a] = xjjana::shifthistcenter(heffcent_Or_ZDCOr[k][a], Form("geffcent_Or_ZDCOr_%dn_%d", k, a), 0, "X0Y0");
-      xjjroot::setthgrstyle(geffcent_Or_ZDCOr[k][a], l1style::colors[k], 25, 1.1, l1style::colors[k], 2, 2);
-    }
+    COMBINESTYLE(MAKEGR);
   }
   for (int l=0; l<l1trigger::ncent; l++) {
     gr_heff_And_HFOnly[l] = xjjana::shifthistcenter(heff_And_ZDCAnd[0][l], Form("gr_%s", heff_And_ZDCAnd[0][l]->GetName()), (int)-1);
     xjjroot::setthgrstyle(gr_heff_And_HFOnly[l], l1style::colors[l], 20, 1.1, l1style::colors[l], 1, 2);
     gr_heff_Or_HFOnly[l] = xjjana::shifthistcenter(heff_Or_ZDCAnd[0][l], Form("gr_%s", heff_Or_ZDCAnd[0][l]->GetName()), (int)-1);
     xjjroot::setthgrstyle(gr_heff_Or_HFOnly[l], l1style::colors[l], 21, 1.1, l1style::colors[l], 1, 2);
-  }
-  for (int k=0; k<l1trigger::nNeus; k++) {
-    gr_heff_And_ZDCAnd_int[k] = xjjana::shifthistcenter(heff_And_ZDCAnd_int[k], Form("gr_%s", heff_And_ZDCAnd_int[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_And_ZDCAnd_int[k], l1style::colors[k], 20, 1.1, l1style::colors[k], 1, 2);
-    gr_heff_And_ZDCOr_int[k] = xjjana::shifthistcenter(heff_And_ZDCOr_int[k], Form("gr_%s", heff_And_ZDCOr_int[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_And_ZDCOr_int[k], l1style::colors[k], 24, 1.1, l1style::colors[k], 1, 2);
-    gr_heff_Or_ZDCAnd_int[k] = xjjana::shifthistcenter(heff_Or_ZDCAnd_int[k], Form("gr_%s", heff_Or_ZDCAnd_int[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_Or_ZDCAnd_int[k], l1style::colors[k], 21, 1.1, l1style::colors[k], 1, 2);
-    gr_heff_Or_ZDCOr_int[k] = xjjana::shifthistcenter(heff_Or_ZDCOr_int[k], Form("gr_%s", heff_Or_ZDCOr_int[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_Or_ZDCOr_int[k], l1style::colors[k], 25, 1.1, l1style::colors[k], 1, 2);
-
-    gr_heff_And_ZDCAnd_interest[k] = xjjana::shifthistcenter(heff_And_ZDCAnd_interest[k], Form("gr_%s", heff_And_ZDCAnd_interest[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_And_ZDCAnd_interest[k], l1style::colors[k], 20, 1.1, l1style::colors[k], 1, 2);
-    gr_heff_And_ZDCOr_interest[k] = xjjana::shifthistcenter(heff_And_ZDCOr_interest[k], Form("gr_%s", heff_And_ZDCOr_interest[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_And_ZDCOr_interest[k], l1style::colors[k], 24, 1.1, l1style::colors[k], 1, 2);
-    gr_heff_Or_ZDCAnd_interest[k] = xjjana::shifthistcenter(heff_Or_ZDCAnd_interest[k], Form("gr_%s", heff_Or_ZDCAnd_interest[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_Or_ZDCAnd_interest[k], l1style::colors[k], 21, 1.1, l1style::colors[k], 1, 2);
-    gr_heff_Or_ZDCOr_interest[k] = xjjana::shifthistcenter(heff_Or_ZDCOr_interest[k], Form("gr_%s", heff_Or_ZDCOr_interest[k]->GetName()), (int)-1);
-    xjjroot::setthgrstyle(gr_heff_Or_ZDCOr_interest[k], l1style::colors[k], 25, 1.1, l1style::colors[k], 1, 2);
   }
 }
 
@@ -235,7 +210,7 @@ void make_gr() {
     for (auto& hh : h) xjjroot::writehist(hh);                          \
   for (auto& h : heffcent_##h##_ZDC##z)                                 \
     for (auto& hh : h) xjjroot::writehist(hh);                          \
-  for (auto& h : heff_##h##_ZDC##z##_int) xjjroot::writehist(h);        \
+  for (auto& h : heff_##h##_ZDC##z##_incl) xjjroot::writehist(h);        \
   for (auto& h : heff_##h##_ZDC##z##_interest) xjjroot::writehist(h);   \
 
 void write_hist() {
