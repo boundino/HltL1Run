@@ -9,26 +9,34 @@
 #include "xjjmypdf.h"
 #include "config.h"
 
+#ifndef LOOPBRANCHES
+#define LOOPBRANCHES(EXPAND)                    \
+  EXPAND(mMaxL1HFAdcPlus)                       \
+  EXPAND(mMaxietaPlus)                          \
+  EXPAND(mMaxiphiPlus)                          \
+  EXPAND(mMaxdepthPlus)                         \
+  EXPAND(mMaxL1HFAdcMinus)                      \
+  EXPAND(mMaxietaMinus)                         \
+  EXPAND(mMaxiphiMinus)                         \
+  EXPAND(mMaxdepthMinus)                        \
+
+#endif
+
 struct hfmax {
-  int mMaxL1HFAdcPlus;
-  int mMaxietaPlus;
-  int mMaxiphiPlus;
-  int mMaxdepthPlus;
-  int mMaxL1HFAdcMinus;
-  int mMaxietaMinus;
-  int mMaxiphiMinus;
-  int mMaxdepthMinus;
+#define DECLAREST(t) int t;
+  LOOPBRANCHES(DECLAREST);
 };
 
 void setbranch(TTree* t, hfmax& hf) {
-  t->SetBranchAddress("mMaxL1HFAdcPlus", &hf.mMaxL1HFAdcPlus);
-  t->SetBranchAddress("mMaxietaPlus", &hf.mMaxietaPlus);
-  t->SetBranchAddress("mMaxiphiPlus", &hf.mMaxiphiPlus);
-  t->SetBranchAddress("mMaxdepthPlus", &hf.mMaxdepthPlus);
-  t->SetBranchAddress("mMaxL1HFAdcMinus", &hf.mMaxL1HFAdcMinus);
-  t->SetBranchAddress("mMaxietaMinus", &hf.mMaxietaMinus);
-  t->SetBranchAddress("mMaxiphiMinus", &hf.mMaxiphiMinus);
-  t->SetBranchAddress("mMaxdepthMinus", &hf.mMaxdepthMinus);
+  t->SetBranchStatus("*", false);
+
+#ifndef SETBRANCH
+#define SETBRANCH(b)                            \
+  t->SetBranchStatus(#b, true);                 \
+  t->SetBranchAddress(#b, &hf.b);
+#endif
+
+  LOOPBRANCHES(SETBRANCH);
 }
 
 auto cc = TColor::GetColor("#005b96");
@@ -57,18 +65,17 @@ void draw(std::vector<TH2F*>& pieta, std::vector<TH2F*>& pphi, xjjroot::mypdf* p
   }
 }
 
-int macro(std::string param)
+int macro(std::string param, long long int nevtmax = 1.e4)
 {
   xjjc::config conf(param);
-  conf.print();
-  std::string inputname = conf["Input_adcToGeV"], outputdir = conf["Output"];
+  std::string inputname = conf["Input"], outputdir = conf["Output"];
   auto tag = conf["Tag"];
 
   hfmax hf;
   
   auto inf = TFile::Open(inputname.c_str());
   if (!inf) {
-    inputname = conf["Input"];
+    inputname = conf["Input_adcToGeV"];
     inf = TFile::Open(inputname.c_str());
   }
   TTree* adc = 0;
@@ -95,17 +102,18 @@ int macro(std::string param)
     pMinus[i] = new TH2F(Form("pMinus%d", i), ";ieta;iphi", 13, -41, -28, 73, 0, 73);
   }
 
-  int nevtmax = 1.e4;
-  auto nentries = adc->GetEntries()<nevtmax?adc->GetEntries():nevtmax;
+  auto nentries = std::min(adc->GetEntries(), nevtmax);
   for (int i=0; i<nentries; i++) {
     xjjc::progressslide(i, nentries, 1000);
     adc->GetEntry(i);
     pietaPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxietaPlus, hf.mMaxL1HFAdcPlus);
     piphiPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxiphiPlus, hf.mMaxL1HFAdcPlus);
-    pPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxietaPlus, hf.mMaxiphiPlus, hf.mMaxL1HFAdcPlus);
+    // pPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxietaPlus, hf.mMaxiphiPlus, hf.mMaxL1HFAdcPlus);
+    pPlus[hf.mMaxdepthPlus-1]->Fill(hf.mMaxietaPlus, hf.mMaxiphiPlus);
     pietaMinus[hf.mMaxdepthMinus-1]->Fill(hf.mMaxietaMinus, hf.mMaxL1HFAdcMinus);
     piphiMinus[hf.mMaxdepthMinus-1]->Fill(hf.mMaxiphiMinus, hf.mMaxL1HFAdcMinus);
-    pMinus[hf.mMaxdepthMinus-1]->Fill(hf.mMaxietaMinus, hf.mMaxiphiMinus, hf.mMaxL1HFAdcMinus);
+    // pMinus[hf.mMaxdepthMinus-1]->Fill(hf.mMaxietaMinus, hf.mMaxiphiMinus, hf.mMaxL1HFAdcMinus);
+    pMinus[hf.mMaxdepthMinus-1]->Fill(hf.mMaxietaMinus, hf.mMaxiphiMinus);
   }
   xjjc::progressbar_summary(nentries);
 
