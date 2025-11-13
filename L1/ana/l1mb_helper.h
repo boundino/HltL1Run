@@ -7,6 +7,11 @@
 #include "xjjanauti.h"
 #include "l1mb_constant.h"
 
+#define COMBINE1D(EXPAND)                       \
+  EXPAND(And)                                   \
+  EXPAND(Or)                                    \
+  //
+
 #define COMBINE(EXPAND)                         \
   EXPAND(And, Or)                               \
   EXPAND(And, And)                              \
@@ -18,6 +23,11 @@
   EXPAND(And, Or, t)                            \
   EXPAND(And, And, t)                           \
   EXPAND(Or, Or, t)                             \
+  EXPAND(Or, And, t)                            \
+  //
+
+#define COMBINE3D_ZAND(EXPAND, t)               \
+  EXPAND(And, And, t)                           \
   EXPAND(Or, And, t)                            \
   //
 
@@ -82,7 +92,7 @@ std::vector<TH2F*> hZDC_HF(l1trigger::nDirs, 0);
   std::vector<TH1F*> hfake_##h##_ZDC##z(l1trigger::nNeus, 0);           \
   auto heff_##h##_ZDC##z = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::ncent); \
   auto heffcent_##h##_ZDC##z = xjjc::array2d<TH1F*>(l1trigger::nNeus, l1trigger::nadc); \
-  std::vector<TH1F*> heff_##h##_ZDC##z##_incl(l1trigger::nNeus, 0);      \
+  std::vector<TH1F*> heff_##h##_ZDC##z##_incl(l1trigger::nNeus, 0);     \
   std::vector<TH1F*> heff_##h##_ZDC##z##_interest(l1trigger::nNeus, 0); \
 
 COMBINE(DECLAREH);
@@ -210,7 +220,7 @@ void make_gr() {
     for (auto& hh : h) xjjroot::writehist(hh);                          \
   for (auto& h : heffcent_##h##_ZDC##z)                                 \
     for (auto& hh : h) xjjroot::writehist(hh);                          \
-  for (auto& h : heff_##h##_ZDC##z##_incl) xjjroot::writehist(h);        \
+  for (auto& h : heff_##h##_ZDC##z##_incl) xjjroot::writehist(h);       \
   for (auto& h : heff_##h##_ZDC##z##_interest) xjjroot::writehist(h);   \
 
 void write_hist() {
@@ -226,18 +236,16 @@ template<class T>
 void drawshadow(T* hempty, Color_t cc = kGray, float guide = 15)
 {
   hempty->Draw("AXIS");
-  xjjroot::drawCMS(l1trigger::cmstag, l1trigger::tag);
-  xjjroot::drawtex(0, 0.01, l1trigger::subtag.c_str(), 0.035, 11, 52, kGray+1);
-  if(cc > 0)
-    {
-      float prescls[] = {1, 1.5};
-      for(auto& pp : prescls)
-        {
-          xjjroot::drawline(pp*guide, hempty->GetYaxis()->GetXmin(), pp*guide, hempty->GetYaxis()->GetXmax()<2?1:hempty->GetYaxis()->GetXmax(), cc, 5, 2);
-          xjjroot::drawtexnum(pp*guide-0.5, hempty->GetYaxis()->GetXmin() + (hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20.,
-                              Form("Prescl = %s", xjjc::number_remove_zero(pp).c_str()), 0.032, 32, 62, cc);
-        }
-    }
+  con.drawtag();
+  if(cc > 0) {
+    float prescls[] = {1, 1.5};
+    for(auto& pp : prescls)
+      {
+        xjjroot::drawline(pp*guide, hempty->GetYaxis()->GetXmin(), pp*guide, hempty->GetYaxis()->GetXmax()<2?1:hempty->GetYaxis()->GetXmax(), cc, 5, 2);
+        xjjroot::drawtexnum(pp*guide-0.5, hempty->GetYaxis()->GetXmin() + (hempty->GetYaxis()->GetXmax()-hempty->GetYaxis()->GetXmin())/20.,
+                            Form("Prescl = %s", xjjc::number_remove_zero(pp).c_str()), 0.032, 32, 62, cc);
+      }
+  }
 }
 
 void drawgrval(TGraph* gr, TH2* hempty, bool val = true)

@@ -16,15 +16,16 @@ float frate = 40;
 int macro(std::string param)
 {
   xjjc::config conf(param);
-  std::string outputdir = conf["Output"];
-  if (l1trigger::setconfig(conf)) return 2;
+  con.init(conf);
+  if (!con.valid()) return 2;
+  std::string outputdir = con.label;
   
   auto inf = TFile::Open(Form("rootfiles/%s/savehist.root", outputdir.c_str()));
 
   float hlt_roc = hist_to_value(inf, "hcent_hlt_rate"),
     hlt_fake = hist_to_value(inf, "hcent_hlt_fake");
 
-  TH1F* hcent = (TH1F*)inf->Get("hcent");
+  auto hcent = (TH1F*)inf->Get("hcent");
   xjjroot::sethempty(hcent);
   xjjroot::setthgrstyle(hcent, kBlack, 20, 0.2, kBlack, 1, 2);
   auto hcent_hlt_eff = (TH1F*)inf->Get("hcent_hlt_eff");
@@ -42,9 +43,9 @@ int macro(std::string param)
     leg_cent->AddEntry(gr_heff_And_HFOnly[l], Form("Cent. %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), "p");
   auto leg_HLT = new TLegend(0.66, 0.33, 0.85, 0.38);
   xjjroot::setleg(leg_HLT, 0.037);
-  xjjroot::addentrybystyle(leg_HLT, "Online HLT", "p", l1style::colors[l1trigger::nneu], 47, 2.);
+  xjjroot::addentrybystyle(leg_HLT, "Online HLT", "p", l1style::colors[con.Ineu], 47, 2.);
   // hempty
-  auto hemptyroc = new TH2F("hemptyroc", ";L1 Rate [kHz];Trigger Efficiency", 10, l1trigger::rate_min, l1trigger::rate_max, 10, 0, 1.35);
+  auto hemptyroc = new TH2F("hemptyroc", ";L1 Rate [kHz];Trigger Efficiency", 10, con.rate_min, con.rate_max, 10, 0, 1.35);
   xjjroot::sethempty(hemptyroc);
   auto hemptyfake = new TH2F("hemptyfake", ";Fake rate (Inclusive centrality);Trigger Efficiency", 10, 0, 0.4, 10, 0, 1.35);
   xjjroot::sethempty(hemptyfake);
@@ -55,16 +56,19 @@ int macro(std::string param)
 
   xjjroot::setgstyle(1);
   gStyle->SetPadRightMargin(xjjroot::margin_pad_right*2);
-  xjjroot::mypdf* pdf = new xjjroot::mypdf("figspdf/" + outputdir + "/per.pdf", "c", 700, 600);
+  auto pdf = new xjjroot::mypdf("figspdf/" + outputdir + "/per.pdf", "c", 700, 600);
 
-  // Efficiency vs ADC 
+  /********************
+  / Efficiency vs ADC /
+  ********************/
+  
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
-  xjjroot::drawline(l1trigger::Iadc, 0, l1trigger::Iadc, 1, kGray, 2, 2);
+  xjjroot::drawline(con.Iadc, 0, con.Iadc, 1, kGray, 2, 2);
   xjjroot::drawline(0, 1, l1trigger::nadc, 1, kBlack, 2, 2);
   for (int l=0; l<l1trigger::ncent; l++) {
     gr_heff_And_HFOnly[l]->Draw("plXe same");
-    drawyvalue(gr_heff_And_HFOnly[l], hemptyeffadc, l1trigger::Iadc);
+    drawyvalue(gr_heff_And_HFOnly[l], hemptyeffadc, con.Iadc);
   }
   leg_cent->Draw();
   l1style::drawleg(l1style::And, l1style::No);
@@ -73,11 +77,11 @@ int macro(std::string param)
 
   pdf->prepare();
   drawshadow(hemptyeffadc, 0);
-  xjjroot::drawline(l1trigger::Iadc, 0, l1trigger::Iadc, 1, kGray, 2, 2);
+  xjjroot::drawline(con.Iadc, 0, con.Iadc, 1, kGray, 2, 2);
   xjjroot::drawline(0, 1, l1trigger::nadc, 1, kBlack, 2, 2);
   for (int l=0; l<l1trigger::ncent; l++) {
     gr_heff_Or_HFOnly[l]->Draw("plXe same");
-    drawyvalue(gr_heff_Or_HFOnly[l], hemptyeffadc, l1trigger::Iadc);
+    drawyvalue(gr_heff_Or_HFOnly[l], hemptyeffadc, con.Iadc);
   }
   leg_cent->Draw();
   l1style::drawleg(l1style::Or, l1style::No);
@@ -91,43 +95,48 @@ int macro(std::string param)
 #define DRAW_INCL(h, z, t)                                              \
   pdf->prepare();                                                       \
   drawshadow(hemptyeffadc, 0);                                          \
-  xjjroot::drawline(l1trigger::Iadc, 0, l1trigger::Iadc, gr_heff_##h##_ZDC##z##_##t[l1trigger::nneu]->GetPointY(l1trigger::Iadc), kGray, 2, 2); \
+  xjjroot::drawline(con.Iadc, 0, con.Iadc, gr_heff_##h##_ZDC##z##_##t[con.hasZDC() ? con.Ineu : 0]->GetPointY(con.Iadc), kGray, 2, 2); \
   xjjroot::drawline(0, 1, l1trigger::nadc, 1, kBlack, 2, 2);            \
   gr_heff_##h##_ZDCAnd_##t[0]->Draw("plXe same");                       \
-  if (!l1trigger::ismc) {                                               \
+  if (con.hasZDC()) {                                                   \
     for (int k=l1trigger::nNeus-1; k>=1; k--) {                         \
       gr_heff_##h##_ZDC##z##_##t[k]->Draw("plXe same");                 \
     }                                                                   \
     l1style::drawleg(l1style::h, l1style::z, gr_heff_##h##_ZDC##z##_##t[0]); \
   } else {                                                              \
-    l1style::drawleg(l1style::h, l1style::And, gr_heff_##h##_ZDCAnd_##t[0]); \
+    l1style::drawleg(l1style::h, l1style::No, gr_heff_##h##_ZDC##z##_##t[0]); \
   }                                                                     \
   xjjroot::drawtex(0.23, 0.4, Form("Cent. 0 - %d%s", l1trigger::cent[l1trigger::l_##t]/2, "%"), 0.038, 12); \
-  drawyvalue(gr_heff_##h##_ZDC##z##_##t[l1trigger::nneu], hemptyeffadc, l1trigger::Iadc); \
+  drawyvalue(gr_heff_##h##_ZDC##z##_##t[con.hasZDC() ? con.Ineu : 0], hemptyeffadc, con.Iadc); \
   pdf->getc()->RedrawAxis();                                            \
   pdf->write();                                                         \
 
-  COMBINE3D(DRAW_INCL, incl);
-  if (l1trigger::l_interest < l1trigger::l_incl) {
-    COMBINE3D(DRAW_INCL, interest);
+  if (con.hasZDC()) {
+    COMBINE3D(DRAW_INCL, incl);
+    if (l1trigger::l_interest < l1trigger::l_incl)
+      COMBINE3D(DRAW_INCL, interest);
+  } else {
+    COMBINE3D_ZAND(DRAW_INCL, incl);
+    if (l1trigger::l_interest < l1trigger::l_incl)
+      COMBINE3D_ZAND(DRAW_INCL, interest);
   }
 
   /********************
   / ZDC distribution  / 
   ********************/
   
-  if (!l1trigger::ismc) {
+  if (con.hasZDC()) {
     pdf->getc()->SetLogy();
     for (int j=0; j<l1trigger::nDirs; j++) {
       pdf->prepare();
       drawshadow(hZDCdisGeV[j], 0);
       hZDCdisGeV[j]->Draw("pe same");
       for (int k=1; k<l1trigger::nNeus; k++) {
-        float biny = hZDCdisGeV[j]->GetBinContent(hZDCdisGeV[j]->FindBin(l1trigger::mNeuZDCLow[j][k]));
-        xjjroot::drawline(l1trigger::mNeuZDCLow[j][k], hZDCdisGeV[j]->GetMinimum()/2., 
-                          l1trigger::mNeuZDCLow[j][k], biny,
+        float biny = hZDCdisGeV[j]->GetBinContent(hZDCdisGeV[j]->FindBin(con.ZDCthre[j][k]));
+        xjjroot::drawline(con.ZDCthre[j][k], hZDCdisGeV[j]->GetMinimum()/2., 
+                          con.ZDCthre[j][k], biny,
                           l1style::colors[k], 7, 4);
-        xjjroot::drawtexnum(l1trigger::mNeuZDCLow[j][k], biny*5, Form("(%dn)", k), 0.038, 22, 62, l1style::colors[k]);
+        xjjroot::drawtexnum(con.ZDCthre[j][k], biny*5, Form("(%dn)", k), 0.038, 22, 62, l1style::colors[k]);
       }
       // xjjroot::drawtex(0.80, 0.80, "Mimic trigger (Ts2 - 0.45#timesTs1)", 0.038, 32);
       pdf->write();
@@ -146,34 +155,39 @@ int macro(std::string param)
   drawshadow(hcent, 0);
   // xjjroot::drawbox(85, hcent->GetMinimum(), 100, hcent->GetMaximum());
   hcent->Draw("hist e same");
-  if (!l1trigger::ismc) {
-    xjjroot::drawtex(0.24, 0.85, "Applied Offline Event Selection", 0.038, 13);
-  }
+  xjjroot::drawtex(0.24, 0.85, "Applied Offline Event Selection", 0.038, 13);
   pdf->getc()->RedrawAxis();
   pdf->write();
 
   /***************************
-  / Rate ROC: HF only        / 
+  / ROC: rate + fake, HF only/ 
   ***************************/
-  
-  for (int l=0; l<l1trigger::ncent; l++)
-    {
-      pdf->prepare();
-      drawshadow(hemptyroc, 0);
 
-      groc_And_ZDCAnd[0][l]->Draw("same pl");
-      drawhfth(groc_And_ZDCAnd[0][l], hemptyroc, +1./40);
-      groc_Or_ZDCOr[0][l]->Draw("same pl");
-      drawhfth(groc_Or_ZDCOr[0][l], hemptyroc, -1./40);
-      l1style::drawleg(l1style::And, l1style::No, groc_And_ZDCAnd[0][l], l1style::Up);
-      l1style::drawleg(l1style::Or, l1style::No, groc_Or_ZDCOr[0][l], l1style::Down);
-      xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32);
-      pdf->getc()->RedrawAxis();
-      pdf->write();
-    }
+#define DRAWROCHF(t)                                                    \
+  for (int l=0; l<l1trigger::ncent; l++) {                              \
+    pdf->prepare();                                                     \
+    drawshadow(hempty##t, 0);                                           \
+                                                                        \
+    g##t##_And_ZDCAnd[0][l]->Draw("same pl");                           \
+    drawhfth(g##t##_And_ZDCAnd[0][l], hempty##t, +1./40);               \
+    g##t##_Or_ZDCOr[0][l]->Draw("same pl");                             \
+    drawhfth(g##t##_Or_ZDCOr[0][l], hempty##t, -1./40);                 \
+    l1style::drawleg(l1style::And, l1style::No, g##t##_And_ZDCAnd[0][l], l1style::Up); \
+    l1style::drawleg(l1style::Or, l1style::No, g##t##_Or_ZDCOr[0][l], l1style::Down); \
+    xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32); \
+    if (con.drawHLT() && con.Ineu == 0) {                               \
+      xjjroot::drawpoint(hlt_##t, hcent_hlt_eff->GetBinContent(l+1), l1style::colors[con.Ineu], 47, 2.0); \
+      leg_HLT->Draw();                                                  \
+    }                                                                   \
+    pdf->getc()->RedrawAxis();                                          \
+    pdf->write();                                                       \
+  }                                                                     \
+
+  DRAWROCHF(roc);
+  DRAWROCHF(fake);
 
   /***************************
-  / ROC: rate and fake       / 
+  / ROC: rate + fake, w. ZDC  / 
   ***************************/
   
 #define DRAWROC(h, z, t)                                                \
@@ -187,8 +201,8 @@ int macro(std::string param)
       drawhfth(g##t##_##h##_ZDC##z[k][l], hempty##t);                   \
     }                                                                   \
     l1style::drawleg(l1style::h, l1style::z, g##t##_##h##_ZDC##z[0][l]); \
-    if (l1trigger::drawhlt) {                                           \
-      xjjroot::drawpoint(hlt_##t, hcent_hlt_eff->GetBinContent(l+1), l1style::colors[l1trigger::nneu], 47, 2.0); \
+    if (con.drawHLT()) {                                                \
+      xjjroot::drawpoint(hlt_##t, hcent_hlt_eff->GetBinContent(l+1), l1style::colors[con.Ineu], 47, 2.0); \
       leg_HLT->Draw();                                                  \
     }                                                                   \
     xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32); \
@@ -196,29 +210,31 @@ int macro(std::string param)
     pdf->write();                                                       \
   }
 
-  COMBINE3D(DRAWROC, roc);
-  COMBINE3D(DRAWROC, fake);
+  if (con.hasZDC()) {
+    COMBINE3D(DRAWROC, roc);
+    COMBINE3D(DRAWROC, fake);
+  }
   
   /***************************
   / Centrality dependence    / 
   ***************************/
-
-  int thisnneu = 1;
-
   if (l1trigger::ncent > 1) {
 
     ////////////////////////////
     /* Fixed HF treshold      */ 
     ////////////////////////////
-  
+
+    int thisIneu = 1;
     for (int a : {15, 16}) {
       pdf->prepare();
       drawshadow(hemptyeffcent, 0);
       geffcent_And_ZDCAnd[0][a]->Draw("same pl");    
-      geffcent_And_ZDCOr[thisnneu][a]->Draw("same pl");
-      xjjroot::drawtex(0.23, 0.30, Form("Rate [HF only] = %.2f kHz", hrate_And_ZDCAnd[0]->GetBinContent(a+1)), 0.038, 12);
-      xjjroot::drawtex(0.23, 0.25, Form("Rate [ZDC Or %dn] = %.2f kHz", thisnneu, hrate_And_ZDCOr[thisnneu]->GetBinContent(a+1)), 0.038, 12, 42, l1style::colors[thisnneu]);
       xjjroot::drawtex(0.23, 0.35, Form("Same HF threshold = %d", a), 0.035, 12, 62);
+      xjjroot::drawtex(0.23, 0.30, Form("Rate [HF only] = %.2f kHz", hrate_And_ZDCAnd[0]->GetBinContent(a+1)), 0.038, 12);
+      if (con.hasZDC()) {
+        geffcent_And_ZDCOr[thisIneu][a]->Draw("same pl");
+        xjjroot::drawtex(0.23, 0.25, Form("Rate [ZDC Or %dn] = %.2f kHz", thisIneu, hrate_And_ZDCOr[thisIneu]->GetBinContent(a+1)), 0.038, 12, 42, l1style::colors[thisIneu]);
+      }
       pdf->getc()->RedrawAxis();
       pdf->write();
     }
@@ -230,46 +246,58 @@ int macro(std::string param)
     for (float prescale : {1.}) {
       pdf->prepare();
       drawshadow(hemptyeffcent, 0);
+      
       for (int k=0; k<l1trigger::nNeus; k++) {
+        if (!con.hasZDC() && k) continue; 
         int aAnd = nearest(hrate_And_ZDCAnd[k], frate*prescale),
           aOr = nearest(hrate_And_ZDCOr[k], frate*prescale);
         geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
         geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
+        if (!con.hasZDC()) {
+          aOr = nearest(hrate_Or_ZDCOr[k], frate*prescale);
+          geffcent_Or_ZDCOr[k][aOr]->Draw("same pl");
+        }
       }
-      l1style::drawleg(l1style::And, l1style::And, geffcent_And_ZDCAnd[0][0], l1style::Up);
-      l1style::drawleg(l1style::And, l1style::Or, geffcent_And_ZDCOr[0][0], l1style::Down);
-      // xjjroot::drawtex(0.88, 0.30, Form("L1 MB rate #approx %.0f kHz (Presl %.1f)", frate*prescale, prescale), 0.038, 32);
       xjjroot::drawtex(0.23, 0.30, Form("L1 MB rate #approx %.0f kHz", frate*prescale), 0.038, 12);
-      xjjroot::drawtex(0.23, 0.35, "Similar rate w/ vs. w/o ZDCOR", 0.035, 12, 62);
+      if (con.hasZDC()) {
+        l1style::drawleg(l1style::And, l1style::And, geffcent_And_ZDCAnd[0][0], l1style::Up);
+        l1style::drawleg(l1style::And, l1style::Or, geffcent_And_ZDCOr[0][0], l1style::Down);
+        xjjroot::drawtex(0.23, 0.35, "Similar rate w/ vs. w/o ZDCOR", 0.035, 12, 62);
+      } else {
+        l1style::drawleg(l1style::And, l1style::No, geffcent_And_ZDCAnd[0][0], l1style::Up);
+        l1style::drawleg(l1style::Or, l1style::No, geffcent_Or_ZDCOr[0][0], l1style::Down);
+      }
       pdf->getc()->RedrawAxis();
       pdf->write();
     }
 
-    ////////////////////////////
-    /* ZDC only               */ 
-    ////////////////////////////
-  
-    pdf->prepare();
-    drawshadow(hemptyeffcent, 0);
-    for (int k=0; k<l1trigger::nNeus; k++) {
-      int aAnd = 0, aOr = 0;
-      geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
-      geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
-    }
-    l1style::drawleg(l1style::No, l1style::And, geffcent_And_ZDCAnd[0][0], l1style::Up);
-    l1style::drawleg(l1style::No, l1style::Or, geffcent_And_ZDCOr[0][0], l1style::Down);    
-    xjjroot::drawtex(0.23, 0.35, "ZDC only", 0.035, 12, 62);
-    pdf->getc()->RedrawAxis();
-    pdf->write();
+    if (con.hasZDC()) {
+      
+      ////////////////////////////
+      /* ZDC only               */ 
+      ////////////////////////////
 
-  }
+      pdf->prepare();
+      drawshadow(hemptyeffcent, 0);
+      for (int k=0; k<l1trigger::nNeus; k++) {
+        int aAnd = 0, aOr = 0;
+        geffcent_And_ZDCAnd[k][aAnd]->Draw("same pl");
+        geffcent_And_ZDCOr[k][aOr]->Draw("same pl");
+      }
+      l1style::drawleg(l1style::No, l1style::And, geffcent_And_ZDCAnd[0][0], l1style::Up);
+      l1style::drawleg(l1style::No, l1style::Or, geffcent_And_ZDCOr[0][0], l1style::Down);    
+      xjjroot::drawtex(0.23, 0.35, "ZDC only", 0.035, 12, 62);
+      pdf->getc()->RedrawAxis();
+      pdf->write();
+    }
+  } // <-- if (l1trigger::ncent > 1) {
 
   // --> Individuals (only HF and 2n)
   // auto leg_ind1 = new TLegend(0.24, 0.80, 0.87, 0.85);
   // leg_ind1->SetNColumns(2);
   // xjjroot::setleg(leg_ind1, 0.038);
   // leg_ind1->AddEntry(groc_And_ZDCAnd[0][0], "HF Only", "pl");
-  // leg_ind1->AddEntry(groc_And_ZDCOr[l1trigger::nneu][0], Form("HF + ZDC_OR (%dn)", l1trigger::nneu), "pl");
+  // leg_ind1->AddEntry(groc_And_ZDCOr[con.Ineu][0], Form("HF + ZDC_OR (%dn)", con.Ineu), "pl");
 
   // // >>
   // for (int l=0; l<l1trigger::ncent; l++)
@@ -277,29 +305,29 @@ int macro(std::string param)
   //     pdf->prepare();
   //     drawshadow(hempty, 0);
   //     // drawgrval(groc_And_ZDCAnd[0][l], hempty);
-  //     // drawgrval(groc_And_ZDCOr[l1trigger::nneu][l], hempty);
+  //     // drawgrval(groc_And_ZDCOr[con.Ineu][l], hempty);
   //     groc_And_ZDCAnd[0][l]->Draw("pl same");
-  //     groc_And_ZDCOr[l1trigger::nneu][l]->Draw("pl same");
+  //     groc_And_ZDCOr[con.Ineu][l]->Draw("pl same");
   //     drawhfth(groc_And_ZDCOr[0][l], hempty);
-  //     drawhfth(groc_And_ZDCOr[l1trigger::nneu][l], hempty);
+  //     drawhfth(groc_And_ZDCOr[con.Ineu][l], hempty);
   //     leg_ind1->Draw();
   //     xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32);
   //     pdf->write();
   //   }
 
   // // >>
-  // for (auto& h : groc_And_ZDCOr[l1trigger::nneu]) h->SetLineStyle(1);
+  // for (auto& h : groc_And_ZDCOr[con.Ineu]) h->SetLineStyle(1);
   // auto leg_ind = new TLegend(0.24, 0.76, 0.87, 0.86);
   // leg_ind->SetNColumns(2);
   // xjjroot::setleg(leg_ind, 0.038);
   // leg_ind->AddEntry(groc_And_ZDCAnd[0][0], "HF Only", "pl");
-  // leg_ind->AddEntry(groc_And_ZDCOr[l1trigger::nneu][0], Form("HF + ZDC_OR (%dn)", l1trigger::nneu), "pl");
+  // leg_ind->AddEntry(groc_And_ZDCOr[con.Ineu][0], Form("HF + ZDC_OR (%dn)", con.Ineu), "pl");
   // for (int l=0; l<l1trigger::ncent; l++)
   //   {
   //     pdf->prepare(); 
   //     drawshadow(hempty, 0);
   //     drawgrval(groc_And_ZDCAnd[0][l], hempty);
-  //     drawgrval(groc_And_ZDCOr[l1trigger::nneu][l], hempty);
+  //     drawgrval(groc_And_ZDCOr[con.Ineu][l], hempty);
   //     leg_ind->Draw();
   //     xjjroot::drawtex(0.88, 0.30, Form("Centrality %d-%d%s", l1trigger::cent[l]/2, l1trigger::cent[l+1]/2, "%"), 0.038, 32);
   //     pdf->write();
