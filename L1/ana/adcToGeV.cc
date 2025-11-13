@@ -15,7 +15,6 @@
 void adcToGeV(std::string param, int nevt = 2.e+3)
 {
   xjjc::config conf(param);
-  conf.print();
   std::string inputname = conf["Input_adcToGeV"], outputdir = conf["Output"];
 
   TFile* inf = new TFile(inputname.c_str());
@@ -43,27 +42,27 @@ void adcToGeV(std::string param, int nevt = 2.e+3)
 
   //
   std::vector<TH2F*> vhist;
-  TH2F* hcorr_ADC_Eped = new TH2F("hcorr_ADC_Eped", ";HF ADC;HF energy (before ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
+  auto hcorr_ADC_Eped = new TH2F("hcorr_ADC_Eped", ";HF ADC;HF energy (before ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
   vhist.push_back(hcorr_ADC_Eped);
-  TH2F* hcorr_ADC_Epedplus = new TH2F("hcorr_ADC_Epedplus", ";HF+ ADC;HF+ energy (before ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
+  auto hcorr_ADC_Epedplus = new TH2F("hcorr_ADC_Epedplus", ";HF+ ADC;HF+ energy (before ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
   vhist.push_back(hcorr_ADC_Epedplus);
-  TH2F* hcorr_ADC_Epedminus = new TH2F("hcorr_ADC_Epedminus", ";HF- ADC;HF- energy (before ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
+  auto hcorr_ADC_Epedminus = new TH2F("hcorr_ADC_Epedminus", ";HF- ADC;HF- energy (before ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
   vhist.push_back(hcorr_ADC_Epedminus);
-  TH2F* hcorr_ADC_E = new TH2F("hcorr_ADC_E", ";HF ADC;HF energy (after ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
+  auto hcorr_ADC_E = new TH2F("hcorr_ADC_E", ";HF ADC;HF energy (after ped sub) [GeV]", 30, 0, 30, 100, 0, 20);
   vhist.push_back(hcorr_ADC_E);
-  TH2F* hcorr_Eped_E = new TH2F("hcorr_Eped_E", ";HF energy (before ped sub) [GeV];HF energy (after ped sub) [GeV]", 100, 0, 20, 100, 0, 20);
+  auto hcorr_Eped_E = new TH2F("hcorr_Eped_E", ";HF energy (before ped sub) [GeV];HF energy (after ped sub) [GeV]", 100, 0, 20, 100, 0, 20);
   vhist.push_back(hcorr_Eped_E);
-  TH2F* hcorr_fCped_Eped = new TH2F("hcorr_fCped_Eped", ";Charge input fC (before ped sub);HF energy (before ped sub) [GeV]", 100, 0, 100, 100, 0, 20);
+  auto hcorr_fCped_Eped = new TH2F("hcorr_fCped_Eped", ";Charge input fC (before ped sub);HF energy (before ped sub) [GeV]", 100, 0, 100, 100, 0, 20);
   vhist.push_back(hcorr_fCped_Eped);
-  TH2F* hcorr_fC_E = new TH2F("hcorr_fC_E", ";Charge input fC (after ped sub);HF energy (after ped sub) [GeV]", 100, 0, 100, 100, 0, 20);
+  auto hcorr_fC_E = new TH2F("hcorr_fC_E", ";Charge input fC (after ped sub);HF energy (after ped sub) [GeV]", 100, 0, 100, 100, 0, 20);
   vhist.push_back(hcorr_fC_E);
-  // TH2F* hcorrtower_ADC_Eoffline = new TH2F("hcorrtower_ADC_Eoffline", ";HF ADC;offline HF tower energy / 4 [GeV]", 30, 0, 30, 100, 0, 20); 
+  // auto hcorrtower_ADC_Eoffline = new TH2F("hcorrtower_ADC_Eoffline", ";HF ADC;offline HF tower energy / 4 [GeV]", 30, 0, 30, 100, 0, 20); 
   // vhist.push_back(hcorrtower_ADC_Eoffline);
-  // TH2F* hcorrtower_E_Eoffline = new TH2F("hcorrtower_E_Eoffline", ";HF energy (after ped sub) [GeV];offline HF tower energy / 4 [GeV]", 100, 0, 20, 100, 0, 20);
+  // auto hcorrtower_E_Eoffline = new TH2F("hcorrtower_E_Eoffline", ";HF energy (after ped sub) [GeV];offline HF tower energy / 4 [GeV]", 100, 0, 20, 100, 0, 20);
   // vhist.push_back(hcorrtower_E_Eoffline);
-  // TH2F* hcorrtower_ADCsum_Eoffline = new TH2F("hcorrtower_ADCsum_Eoffline", ";HF tower ADC / 4;offline HF tower energy / 4 [GeV]", 30, 0, 30, 100, 0, 20); 
+  // auto hcorrtower_ADCsum_Eoffline = new TH2F("hcorrtower_ADCsum_Eoffline", ";HF tower ADC / 4;offline HF tower energy / 4 [GeV]", 30, 0, 30, 100, 0, 20); 
   // vhist.push_back(hcorrtower_ADCsum_Eoffline);
-  // TH2F* hcorrtower_Esum_Eoffline = new TH2F("hcorrtower_Esum_Eoffline", ";HF tower energy (after ped sub) / 4 [GeV];offline HF tower energy / 4 [GeV]", 100, 0, 20, 100, 0, 20);
+  // auto hcorrtower_Esum_Eoffline = new TH2F("hcorrtower_Esum_Eoffline", ";HF tower energy (after ped sub) / 4 [GeV];offline HF tower energy / 4 [GeV]", 100, 0, 20, 100, 0, 20);
   // vhist.push_back(hcorrtower_Esum_Eoffline);
 
   int nentries = nevt>0&&nevt<l1Adc->GetEntries()?nevt:l1Adc->GetEntries();

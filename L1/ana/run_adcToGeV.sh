@@ -1,6 +1,6 @@
 #!/bin/bash
 
-make adcToGeV drawadcToGeV hfchannel
+make adcToGeV drawadcToGeV hfchannel || exit
 
 conf=$1
 
