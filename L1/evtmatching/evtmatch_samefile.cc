@@ -15,7 +15,6 @@ mbntuplizer* set_forest(std::string inf) {
 
   auto hi = new TChain("hiEvtAnalyzer/HiTree");
   auto skim = new TChain("skimanalysis/HltTree");
-  auto zdcdigi = new TChain("zdcanalyzer/zdcdigi");
   auto zdcrechit = new TChain("zdcanalyzer/zdcrechit");
   auto hlt = new TChain("hltanalysis/HltTree");
   auto l1adc = new TChain("HFAdcana/adc");
@@ -24,7 +23,6 @@ mbntuplizer* set_forest(std::string inf) {
   std::cout<<filename<<std::endl;               \
   hi->Add(filename.c_str());                    \
   skim->Add(filename.c_str());                  \
-  zdcdigi->Add(filename.c_str());               \
   zdcrechit->Add(filename.c_str());             \
   hlt->Add(filename.c_str());                   \
   l1adc->Add(filename.c_str());                 \
@@ -49,7 +47,7 @@ mbntuplizer* set_forest(std::string inf) {
     }
   }
   std::cout<<"Added \e[31m"<<count<<"\e[0m files."<<std::endl;
-  nt = new mbntuplizer(l1adc, hi, skim, zdcrechit, zdcdigi, hlt);
+  nt = new mbntuplizer(l1adc, hi, skim, zdcrechit, 0 /*zdcdigi*/, hlt);
   return nt;
 }
 

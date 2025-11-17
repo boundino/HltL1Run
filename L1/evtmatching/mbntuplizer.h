@@ -4,8 +4,20 @@
 #include "cent/cent_data_2024.h"
 #include "zdc.h"
 #include "../includes/ntbranches.h"
+#include "../includes/define.h"
 
 #define MAX_DIGI 56
+
+#define DECLARE(p) int p;
+#define SETBRANCH_WARNING(q, t, c)                                      \
+  if (t->FindBranch(XSTR(q))) {                                         \
+    t->SetBranchStatus(XSTR(q), 1);                                     \
+    t->SetBranchAddress(XSTR(q), &q);                                   \
+  } else {                                                              \
+    std::cout<<"  \e[" #c "m(x) no branch: " XSTR(q) "\e[0m"<<std::endl; \
+  }
+#define SETVALUE(q) br.XPASTE(m, q) = q;
+  
 
 const std::vector<std::string> prehltpaths = {"HLT_HIZeroBias_HighRate_v8", "HLT_HIMinimumBiasHF1AND_v8", "HLT_HIMinimumBiasHF1ANDZDC1nOR_v6", "HLT_HIMinimumBiasHF1ANDZDC2nOR_v9"};
 class mbntuplizer
@@ -36,12 +48,7 @@ private:
   int hiNpix, hiNtracks, hiNpixelTracks;
 
   // mSkimTree
-  int pphfCoincFilterPF2Th4;
-  int pphfCoincFilterPF2Th5;
-  int pphfCoincFilterPF2Th6;
-  int pphfCoincFilterPF2Th7;
-  int pphfCoincFilterPF2Th8;
-  int pphfCoincFilterPF2Th9;
+  HFCOINC(DECLARE);
   int pprimaryVertexFilter;
   int pclusterCompatibilityFilter;
 
@@ -104,12 +111,6 @@ void mbntuplizer::getentry(int j) {
 void mbntuplizer::setbranches() {
   nt_cleanbranch(br);
   
-#define SETBRANCH_WARNING(q, t, c)                                      \
-  if (t->FindBranch(#q))                                                \
-    t->SetBranchAddress(#q, &q);                                        \
-  else                                                                  \
-    std::cout<<"  \e[" #c "m(x) no branch: " #q "\e[0m"<<std::endl;     \
-  
   if (mHiEvtTree) {
     std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mHiEvtTree\e[0m"<<std::endl;
     mHiEvtTree->SetBranchAddress("run", &run);
@@ -131,12 +132,8 @@ void mbntuplizer::setbranches() {
     std::cout<<__FUNCTION__<<" \e[32m(o) set tree: mSkimTree\e[0m"<<std::endl;
     mSkimTree->SetBranchAddress("pprimaryVertexFilter", &pprimaryVertexFilter);
     mSkimTree->SetBranchAddress("pclusterCompatibilityFilter", &pclusterCompatibilityFilter);
-    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th4", &pphfCoincFilterPF2Th4);
-    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th5", &pphfCoincFilterPF2Th5);
-    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th6", &pphfCoincFilterPF2Th6);
-    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th7", &pphfCoincFilterPF2Th7);
-    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th8", &pphfCoincFilterPF2Th8);
-    mSkimTree->SetBranchAddress("pphfCoincFilterPF2Th9", &pphfCoincFilterPF2Th9);
+
+    HFCOINC3D(SETBRANCH_WARNING, mSkimTree, 31);
   }
   else
     std::cout<<__FUNCTION__<<" \e[31m(x) no tree: mSkimTree\e[0m"<<std::endl;
@@ -242,12 +239,7 @@ void mbntuplizer::calculate() {
   if (mSkimTree) {
     br.mpprimaryVertexFilter = pprimaryVertexFilter;
     br.mpclusterCompatibilityFilter = pclusterCompatibilityFilter;
-    br.mpphfCoincFilterPF2Th4 = pphfCoincFilterPF2Th4;
-    br.mpphfCoincFilterPF2Th5 = pphfCoincFilterPF2Th5;
-    br.mpphfCoincFilterPF2Th6 = pphfCoincFilterPF2Th6;
-    br.mpphfCoincFilterPF2Th7 = pphfCoincFilterPF2Th7;
-    br.mpphfCoincFilterPF2Th8 = pphfCoincFilterPF2Th8;
-    br.mpphfCoincFilterPF2Th9 = pphfCoincFilterPF2Th9;
+    HFCOINC(SETVALUE);
   }
   else if (mAdcTree) {
     br.mpphfCoincFilterPF2Th4 = nhfp > 1 && nhfn > 1;
